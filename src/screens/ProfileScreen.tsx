@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/src/styles/colors';
+import { useAuth } from '@/src/contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -46,8 +47,26 @@ const mockProfile: UserProfile = {
 };
 
 export default function ProfileScreen() {
+  const { user, logout } = useAuth();
   const [profile, setProfile] = useState(mockProfile);
   const [editMode, setEditMode] = useState(false);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+          },
+        },
+      ]
+    );
+  };
 
   const StatCard = ({ icon, label, value }: { icon: string; label: string; value: string | number }) => (
     <View style={styles.statCard}>
@@ -199,7 +218,7 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.logoutButton}
-            onPress={() => Alert.alert('Logout', 'Are you sure you want to logout?')}
+            onPress={handleLogout}
           >
             <MaterialCommunityIcons name="logout" size={18} color={colors.error} />
             <Text style={styles.logoutButtonText}>Logout</Text>

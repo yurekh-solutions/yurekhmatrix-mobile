@@ -1,5 +1,5 @@
-import HomeScreenEnhanced from '@/src/screens/HomeScreenEnhanced';
+import { HomeScreen } from '@/src/screens/HomeScreen';
 
-export default function HomeScreen() {
-  return <HomeScreenEnhanced />;
+export default function Home() {
+  return <HomeScreen navigation={{}} />;
 }

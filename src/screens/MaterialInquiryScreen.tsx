@@ -9,10 +9,16 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Linking,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/src/styles/colors';
+import { submitMaterialInquiry } from '@/src/lib/api';
+
+// WhatsApp contact number for inquiries
+const WHATSAPP_NUMBER = '919136242706';
 
 interface UploadedFile {
   id: string;
@@ -21,7 +27,7 @@ interface UploadedFile {
   type: string;
 }
 
-export default function MaterialInquiryScreen() {
+export default function MaterialInquiryScreen({ navigation }: any) {
   const [formData, setFormData] = useState({
     name: '',
     company: '',
@@ -98,31 +104,128 @@ export default function MaterialInquiryScreen() {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Prepare inquiry data for backend with ALL fields
+      const inquiryData = {
+        customerName: formData.name.trim(),
+        companyName: formData.company.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || 'Not provided',
+        materials: [{
+          materialName: formData.material.trim(),
+          category: 'general',
+          quantity: parseFloat(formData.quantity) || 0,
+          unit: 'units',
+          specification: formData.specifications.trim(),
+        }],
+        deliveryLocation: formData.deliveryDate.trim() || 'Not specified',
+        additionalRequirements: formData.specifications.trim(),
+      };
 
-      Alert.alert(
-        'Success',
-        'Your material inquiry has been submitted! We will contact you within 24 hours.'
-      );
+      console.log('Submitting inquiry data:', inquiryData);
 
-      // Reset form
-      setFormData({
-        name: '',
-        company: '',
-        email: '',
-        phone: '',
-        material: '',
-        quantity: '',
-        specifications: '',
-        deliveryDate: '',
-      });
-      setFiles([]);
-    } catch (error) {
+      // Submit to backend
+      const result = await submitMaterialInquiry(inquiryData);
+
+      if (result.success) {
+        // Generate formatted WhatsApp message WITH PHONE NUMBER
+        let whatsappMessage = `*🔧 Material Inquiry Request*\n\n`;
+        whatsappMessage += `*👤 Customer Details*\n`;
+        whatsappMessage += `📛 Name: ${formData.name}\n`;
+        whatsappMessage += `🏢 Company: ${formData.company || 'Not specified'}\n`;
+        whatsappMessage += `📧 Email: ${formData.email}\n`;
+        whatsappMessage += `📱 WhatsApp: ${formData.phone || 'Not provided'}\n\n`;
+        whatsappMessage += `*🔨 Material Details*\n`;
+        whatsappMessage += `📦 Material: ${formData.material}\n`;
+        whatsappMessage += `📊 Quantity: ${formData.quantity}\n`;
+        if (formData.specifications) {
+          whatsappMessage += `📝 Specs: ${formData.specifications}\n`;
+        }
+        if (formData.deliveryDate) {
+          whatsappMessage += `📅 Delivery Date: ${formData.deliveryDate}\n`;
+        }
+        whatsappMessage += `\n_✅ Submitted via RitzYard Platform_`;
+
+        const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
+
+        Alert.alert(
+          '✅ Inquiry Submitted!',
+          'Your material inquiry has been saved in our system. Click "Send via WhatsApp" to connect with our sales team immediately.',
+          [
+            {
+              text: '💬 Send via WhatsApp',
+              onPress: () => {
+                Linking.openURL(whatsappUrl).catch(err => {
+                  console.log('WhatsApp not available:', err);
+                  Alert.alert('Info', 'Please manually message +919136242706 on WhatsApp');
+                });
+                // Reset form
+                setFormData({
+                  name: '',
+                  company: '',
+                  email: '',
+                  phone: '',
+                  material: '',
+                  quantity: '',
+                  specifications: '',
+                  deliveryDate: '',
+                });
+                setFiles([]);
+              },
+              style: 'default',
+            },
+            {
+              text: 'Done',
+              onPress: () => {
+                // Reset form
+                setFormData({
+                  name: '',
+                  company: '',
+                  email: '',
+                  phone: '',
+                  material: '',
+                  quantity: '',
+                  specifications: '',
+                  deliveryDate: '',
+                });
+                setFiles([]);
+              },
+              style: 'cancel',
+            },
+          ]
+        );
+
+        // Reset form
+        setFormData({
+          name: '',
+          company: '',
+          email: '',
+          phone: '',
+          material: '',
+          quantity: '',
+          specifications: '',
+          deliveryDate: '',
+        });
+        setFiles([]);
+      } else {
+        Alert.alert('Error', result.message || 'Failed to submit inquiry');
+      }
+    } catch (error: any) {
+      console.error('Submission error:', error);
       Alert.alert('Error', 'Failed to submit inquiry. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQuickWhatsApp = () => {
+    const message = `Hi, I need materials:
+
+• Material: ${formData.material || 'Not specified'}
+• Quantity: ${formData.quantity || 'Not specified'}
+
+Please contact me.`;
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    Linking.openURL(whatsappUrl);
   };
 
   const FileItem = ({ file }: { file: UploadedFile }) => (
@@ -145,10 +248,28 @@ export default function MaterialInquiryScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
+        {/* Header with Back Button */}
         <View style={styles.header}>
-          <Text style={styles.title}>Material Inquiry</Text>
-          <Text style={styles.subtitle}>Request materials from suppliers</Text>
+          <View style={styles.headerRow}>
+            <TouchableOpacity onPress={() => navigation?.goBack?.()} style={styles.backBtn}>
+              <LinearGradient
+                colors={[colors.primary, colors.gradient2 || '#a84a2f']}
+                style={styles.backBtnGradient}
+              >
+                <Ionicons name="chevron-back" size={22} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.title}>Material Inquiry</Text>
+              <Text style={styles.subtitle}>Request materials from suppliers</Text>
+            </View>
+          </View>
+          
+          {/* Quick WhatsApp Button */}
+          <TouchableOpacity style={styles.quickWhatsAppBtn} onPress={handleQuickWhatsApp}>
+            <Ionicons name="logo-whatsapp" size={18} color="#25D366" />
+            <Text style={styles.quickWhatsAppText}>Quick Inquiry</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Form Sections */}
@@ -299,15 +420,55 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     backgroundColor: colors.background,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backBtn: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  backBtnGradient: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textLight,
+  },
+  quickWhatsAppBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E7F9ED',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    marginTop: 12,
+    alignSelf: 'flex-start',
+  },
+  quickWhatsAppText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#25D366',
   },
   section: {
     marginHorizontal: 16,

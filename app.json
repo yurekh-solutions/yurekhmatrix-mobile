@@ -1,13 +1,18 @@
 {
   "expo": {
-    "name": "yurekhmatrix-mobile",
-    "slug": "yurekhmatrix-mobile",
+    "name": "RitzYard",
+    "slug": "ritzyard",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "yurekhmatrixmobile",
+    "scheme": "ritzyard",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f7f5f2"
+    },
     "ios": {
       "supportsTablet": true
     },
@@ -23,7 +28,8 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",
@@ -43,6 +49,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      }
     }
   }
 }

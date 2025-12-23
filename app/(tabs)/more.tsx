@@ -26,7 +26,6 @@ import NotificationsScreen from '@/src/screens/NotificationsScreen';
 import MiloAIScreen from '@/src/screens/MiloAIScreen';
 import MiloGuideScreen from '@/src/screens/MiloGuideScreen';
 import CareersScreen from '@/src/screens/CareersScreen';
-import ProductDetailScreen from '@/src/screens/ProductDetailScreen';
 
 type ScreenType =
   | 'profile'
@@ -43,11 +42,11 @@ type ScreenType =
   | 'milo'
   | 'guide'
   | 'careers'
-  | 'productDetail'
   | null;
 
 export default function MoreScreen() {
   const [activeScreen, setActiveScreen] = useState<ScreenType>(null);
+  const [navigationParams, setNavigationParams] = useState<any>(null);
 
   const screenItems = [
     {
@@ -134,17 +133,20 @@ export default function MoreScreen() {
       icon: 'shield-account',
       section: 'Legal',
     },
-    {
-      id: 'productDetail',
-      label: 'Product Details',
-      icon: 'package-variant',
-      section: 'Demo',
-    },
+
   ];
 
   const sections = [...new Set(screenItems.map((item) => item.section))];
 
   const renderScreen = () => {
+    const navigation = {
+      goBack: () => setActiveScreen(null),
+      navigate: (screen: string, params?: any) => {
+        setNavigationParams(params);
+        setActiveScreen(screen.toLowerCase() as ScreenType);
+      },
+    };
+
     switch (activeScreen) {
       case 'profile':
         return <ProfileScreen />;
@@ -174,8 +176,6 @@ export default function MoreScreen() {
         return <MiloGuideScreen />;
       case 'careers':
         return <CareersScreen />;
-      case 'productDetail':
-        return <ProductDetailScreen />;
       default:
         return null;
     }
@@ -215,7 +215,7 @@ export default function MoreScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.title}>Explore RitzYard</Text>
-          <Text style={styles.subtitle}>15 screens available</Text>
+          <Text style={styles.subtitle}>14 screens available</Text>
         </View>
 
         {sections.map((section) => (

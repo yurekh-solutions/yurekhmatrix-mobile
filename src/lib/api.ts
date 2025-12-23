@@ -1,5 +1,8 @@
 // API Integration Service for yurekhmatrix Mobile
 // Connects to backendmatrix for RFQ submissions
+// Uses local products as fallback when API is unavailable
+
+import { allLocalProducts, LocalProduct } from '@/src/data/localProducts';
 
 /**
  * Get the appropriate API URL based on environment
@@ -16,6 +19,30 @@ const getApiUrl = (): string => {
 };
 
 const API_BASE_URL = getApiUrl();
+
+// Convert local product to backend-compatible format - PRESERVE IMAGES!
+const convertLocalProductToBackend = (product: LocalProduct): any => {
+  const imageType = typeof product.image;
+  console.log('🔄 Converting:', product.name?.substring(0, 30), '| Image type:', imageType);
+  
+  return {
+    _id: product.id,
+    id: product.id,
+    name: product.name,
+    category: product.category,
+    subcategory: product.subcategory,
+    description: product.description,
+    // CRITICAL: Preserve require() image (object/number) completely unchanged
+    image: product.image,  // Keep the exact require() result (object or number)
+    images: product.image ? [product.image] : [],  // Array with same require() reference
+    applications: product.applications || [],
+    features: product.features || [],
+    specifications: product.specifications,
+    price: product.price,
+    stock: product.stock,
+    status: product.stock?.available ? 'active' : 'inactive'
+  };
+};
 
 export interface RFQSubmission {
   customerName: string;
@@ -204,58 +231,101 @@ export const submitRFQ = async (rfqData: RFQSubmission): Promise<{ success: bool
   }
 };
 
-// Get products from backend
+// Get products from backend (public endpoint) with local fallback
 export const getProducts = async (category?: string): Promise<any[]> => {
   try {
     const url = category 
-      ? `${API_BASE_URL}/products?category=${category}`
-      : `${API_BASE_URL}/products`;
+      ? `${API_BASE_URL}/products/public?category=${category}`
+      : `${API_BASE_URL}/products/public`;
     
     console.log('🚀 Fetching products from:', url);
     
-    const response = await fetch(url);
+    const response = await fetch(url, { 
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch products: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('✅ Products fetched:', data);
+    const products = Array.isArray(data) ? data : (data.products || data.data || []);
     
-    return data;
+    if (products.length > 0) {
+      console.log('✅ Products fetched from backend:', products.length, 'items');
+      return products;
+    }
+    
+    // If backend returns empty, use local products
+    console.log('⚠️ Backend returned no products, using local products');
+    throw new Error('No products from backend');
   } catch (error) {
-    console.error('❌ Error fetching products:', error);
-    return [];
+    console.error('❌ Error fetching products from backend:', error);
+    console.log('📦 Using local products as fallback');
+    
+    // Filter by category if specified
+    let localProducts = allLocalProducts;
+    if (category && category !== 'all') {
+      localProducts = allLocalProducts.filter(p => p.category === category);
+    }
+    
+    // Convert local products to backend format
+    const convertedProducts = localProducts.map(convertLocalProductToBackend);
+    console.log('✅ Loaded', convertedProducts.length, 'local products');
+    
+    return convertedProducts;
   }
 };
 
-// Get product details by ID
+// Get product details by ID (public endpoint) with local fallback
 export const getProductById = async (productId: string): Promise<any> => {
   try {
     console.log('🚀 Fetching product:', productId);
     
-    const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+    const response = await fetch(`${API_BASE_URL}/products/public/${productId}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch product: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('✅ Product fetched:', data);
+    const product = data.product || data;
     
-    return data;
+    if (product && product._id) {
+      console.log('✅ Product fetched from backend:', product.name);
+      return product;
+    }
+    
+    throw new Error('Product not found in backend');
   } catch (error) {
-    console.error('❌ Error fetching product:', error);
+    console.error('❌ Error fetching product from backend:', error);
+    console.log('📦 Searching in local products');
+    
+    // Search in local products
+    const localProduct = allLocalProducts.find(p => p.id === productId);
+    
+    if (localProduct) {
+      const converted = convertLocalProductToBackend(localProduct);
+      console.log('✅ Found local product:', converted.name);
+      return converted;
+    }
+    
+    console.log('❌ Product not found in local storage');
     return null;
   }
 };
 
-// Buyer login - for RitzYard mobile app
+// Supplier login - for RitzYard mobile app (supplier login)
 export const buyerLogin = async (email: string, password: string): Promise<{ success: boolean; token?: string; user?: any; message: string }> => {
   try {
-    console.log('🚀 Buyer login attempt:', email);
+    console.log('🚀 Supplier login attempt:', email);
     
-    const response = await fetch(`${API_BASE_URL}/auth/buyer/login`, {
+    // Changed from /auth/buyer/login to /auth/supplier/login
+    const response = await fetch(`${API_BASE_URL}/auth/supplier/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -269,7 +339,7 @@ export const buyerLogin = async (email: string, password: string): Promise<{ suc
       throw new Error(data.message || 'Login failed');
     }
     
-    console.log('✅ Buyer logged in successfully');
+    console.log('✅ Supplier logged in successfully');
     
     return {
       success: true,
@@ -286,12 +356,13 @@ export const buyerLogin = async (email: string, password: string): Promise<{ suc
   }
 };
 
-// Buyer registration - for RitzYard mobile app
+// Buyer registration - for RitzYard mobile app (supplier registration)
 export const buyerRegister = async (userData: any): Promise<{ success: boolean; message: string }> => {
   try {
-    console.log('🚀 Buyer registration:', userData.email);
+    console.log('🚀 Supplier registration:', userData.email);
     
-    const response = await fetch(`${API_BASE_URL}/auth/buyer/register`, {
+    // Changed from /auth/buyer/register to /auth/supplier/register
+    const response = await fetch(`${API_BASE_URL}/auth/supplier/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -305,7 +376,7 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
       throw new Error(data.message || 'Registration failed');
     }
     
-    console.log('✅ Buyer registered successfully');
+    console.log('✅ Supplier registered successfully');
     
     return {
       success: true,

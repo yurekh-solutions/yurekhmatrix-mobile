@@ -11,7 +11,8 @@ import {
   Dimensions,
   FlatList,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/src/styles/colors';
 
 const { width } = Dimensions.get('window');
@@ -28,13 +29,13 @@ interface BlogPost {
   featured?: boolean;
 }
 
-// Mock blog data
+// Better quality blog images from Unsplash
 const mockBlogs: BlogPost[] = [
   {
     id: '1',
     title: 'How to Optimize Your Supply Chain for Maximum Efficiency',
     excerpt: 'Learn proven strategies to streamline your procurement process and reduce costs by up to 40%.',
-    image: 'https://via.placeholder.com/400x250/c15738/ffffff?text=Supply+Chain',
+    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80',
     category: 'Supply Chain',
     author: 'Sarah Johnson',
     date: '2024-12-15',
@@ -45,7 +46,7 @@ const mockBlogs: BlogPost[] = [
     id: '2',
     title: 'Digital Transformation in Procurement: A Complete Guide',
     excerpt: 'Discover how digital tools are revolutionizing the way businesses handle procurement and supplier relationships.',
-    image: 'https://via.placeholder.com/400x250/5c2d23/ffffff?text=Digital+Transform',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80',
     category: 'Technology',
     author: 'Michael Chen',
     date: '2024-12-12',
@@ -56,7 +57,7 @@ const mockBlogs: BlogPost[] = [
     id: '3',
     title: 'Supplier Relationship Management Best Practices',
     excerpt: 'Build stronger partnerships with your suppliers and unlock new opportunities for growth and innovation.',
-    image: 'https://via.placeholder.com/400x250/e8dcd4/5c2d23?text=Partnership',
+    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80',
     category: 'Business',
     author: 'Emma Davis',
     date: '2024-12-10',
@@ -66,7 +67,7 @@ const mockBlogs: BlogPost[] = [
     id: '4',
     title: 'Sustainability in Procurement: Why It Matters',
     excerpt: 'Explore how sustainable procurement practices benefit your business and the environment.',
-    image: 'https://via.placeholder.com/400x250/10b981/ffffff?text=Sustainability',
+    image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=80',
     category: 'Sustainability',
     author: 'James Wilson',
     date: '2024-12-08',
@@ -76,7 +77,7 @@ const mockBlogs: BlogPost[] = [
     id: '5',
     title: 'Market Trends: Materials & Manufacturing 2025',
     excerpt: 'Stay ahead of industry changes with insights into emerging trends and market forecasts.',
-    image: 'https://via.placeholder.com/400x250/f59e0b/ffffff?text=Market+Trends',
+    image: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&q=80',
     category: 'Market Analysis',
     author: 'Robert Taylor',
     date: '2024-12-05',
@@ -86,7 +87,7 @@ const mockBlogs: BlogPost[] = [
     id: '6',
     title: 'Cost Reduction Strategies for Industrial Buyers',
     excerpt: 'Practical techniques to negotiate better prices without compromising quality or supplier relationships.',
-    image: 'https://via.placeholder.com/400x250/3b82f6/ffffff?text=Cost+Reduction',
+    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80',
     category: 'Finance',
     author: 'Lisa Anderson',
     date: '2024-12-01',
@@ -94,7 +95,7 @@ const mockBlogs: BlogPost[] = [
   },
 ];
 
-export default function BlogScreen() {
+export default function BlogScreen({ navigation }: any) {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [filteredBlogs, setFilteredBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -218,10 +219,22 @@ export default function BlogScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header */}
+        {/* Header with Back Button */}
         <View style={styles.header}>
-          <Text style={styles.title}>RitzYard Blog</Text>
-          <Text style={styles.subtitle}>Industry insights, tips & trends</Text>
+          <View style={styles.headerRow}>
+            <TouchableOpacity onPress={() => navigation?.goBack?.()} style={styles.backBtn}>
+              <LinearGradient
+                colors={[colors.primary, colors.gradient2 || '#a84a2f']}
+                style={styles.backBtnGradient}
+              >
+                <Ionicons name="chevron-back" size={22} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.title}>RitzYard Blog</Text>
+              <Text style={styles.subtitle}>Industry insights, tips & trends</Text>
+            </View>
+          </View>
         </View>
 
         {/* Search Bar */}
@@ -326,20 +339,45 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 20,
   },
   header: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 12,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backBtn: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  backBtnGradient: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textLight,
   },
   searchContainer: {

@@ -3,444 +3,900 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
-  ScrollView,
   TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  Alert,
+  Image,
+  ScrollView,
+  Modal,
   Dimensions,
-  FlatList,
+  TextInput,
+  SafeAreaView,
+  Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { submitRFQ } from '@/src/lib/api';
-import { colors } from '@/src/styles/colors';
 
 const { width } = Dimensions.get('window');
 
-interface RFQItem {
-  id: string;
-  productName: string;
+const COLORS = {
+  primary: '#c15738',
+  primaryLight: '#d66f4f',
+  secondary: '#f5ede3',
+  background: '#faf8f6',
+  white: '#ffffff',
+  text: '#683627',
+  textLight: '#8b7355',
+  border: '#e8dfd5',
+  success: '#22c55e',
+};
+
+interface Product {
+  id?: string;
+  name: string;
   category: string;
-  quantity: string;
-  brand?: string;
-  grade?: string;
+  description: string;
+  image?: any;
+  applications?: string[];
+  features?: string[];
+  specifications?: {
+    materialStandard?: string;
+    packaging?: string;
+    testingCertificate?: string;
+    brand?: string[];
+    grades?: string[];
+    delivery?: string;
+    quality?: string;
+    availability?: string;
+  };
+  stock?: {
+    available: boolean;
+    quantity?: number;
+  };
 }
 
-export default function RFQScreen() {
-  const [items, setItems] = useState<RFQItem[]>([
-    { id: '1', productName: '', category: '', quantity: '', brand: '', grade: '' },
-  ]);
-  const [formData, setFormData] = useState({
-    customerName: '',
-    company: '',
-    location: '',
-    email: '',
-    phone: '',
-  });
+interface RFQScreenProps {
+  visible: boolean;
+  product: Product | null;
+  onClose: () => void;
+  onAddToCart?: (rfqData: any) => void;
+}
+
+export interface RFQData {
+  productId: string;
+  productName: string;
+  selectedBrand: string;
+  selectedGrade: string;
+  quantity: number;
+}
+
+const RFQScreen: React.FC<RFQScreenProps> = ({ visible, product, onClose, onAddToCart }) => {
+  const [step, setStep] = useState<1 | 2>(1);
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState<string>('1');
+  const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+  const [showGradeDropdown, setShowGradeDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'items' | 'details'>('items');
 
-  const addItem = () => {
-    const newItem: RFQItem = {
-      id: Date.now().toString(),
-      productName: '',
-      category: '',
-      quantity: '',
-      brand: '',
-      grade: '',
-    };
-    setItems([...items, newItem]);
-  };
+  // Step 2 - Customer Details
+  const [customerName, setCustomerName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [deliveryLocation, setDeliveryLocation] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
 
-  const removeItem = (id: string) => {
-    if (items.length === 1) {
-      Alert.alert('Error', 'You must have at least one item in your RFQ');
+  if (!product) return null;
+
+  const imageSource =
+    typeof product.image === 'object' && product.image !== null
+      ? product.image
+      : typeof product.image === 'number'
+        ? product.image
+        : product.image
+          ? { uri: product.image }
+          : null;
+
+  const brands = product.specifications?.brand || [];
+  const grades = product.specifications?.grades || [];
+
+  const handleNextStep = () => {
+    if (!selectedBrand) {
+      Alert.alert('Required', 'Please select a brand');
       return;
     }
-    setItems(items.filter((item) => item.id !== id));
+    if (!selectedGrade) {
+      Alert.alert('Required', 'Please select a material grade');
+      return;
+    }
+    if (!quantity || parseInt(quantity) < 1) {
+      Alert.alert('Required', 'Please enter a valid quantity');
+      return;
+    }
+    setStep(2);
   };
 
-  const updateItem = (id: string, field: keyof RFQItem, value: string) => {
-    setItems(
-      items.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    );
-  };
-
-  const validateForm = () => {
-    if (!formData.customerName.trim()) {
-      Alert.alert('Error', 'Please enter your name');
-      return false;
+  const handleSubmitRFQ = async () => {
+    if (!customerName.trim()) {
+      Alert.alert('Required', 'Please enter your name');
+      return;
     }
-    if (!formData.company.trim()) {
-      Alert.alert('Error', 'Please enter your company name');
-      return false;
+    if (!companyName.trim()) {
+      Alert.alert('Required', 'Please enter your company name');
+      return;
     }
-    if (!formData.email.trim()) {
-      Alert.alert('Error', 'Please enter your email');
-      return false;
+    if (!deliveryLocation.trim()) {
+      Alert.alert('Required', 'Please enter delivery location');
+      return;
     }
-    if (!formData.phone.trim()) {
-      Alert.alert('Error', 'Please enter your phone number');
-      return false;
+    if (!email.trim()) {
+      Alert.alert('Required', 'Please enter your email');
+      return;
     }
-    if (items.some((item) => !item.productName.trim() || !item.quantity.trim())) {
-      Alert.alert('Error', 'Please fill in all item details');
-      return false;
+    if (!phone.trim()) {
+      Alert.alert('Required', 'Please enter your phone number');
+      return;
     }
-    return true;
-  };
-
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
 
     setLoading(true);
     try {
       const rfqData = {
-        ...formData,
-        items: items.map((item) => ({
-          productId: item.id,
-          productName: item.productName,
-          category: item.category,
-          brand: item.brand,
-          grade: item.grade,
-          quantity: parseInt(item.quantity) || 0,
-        })),
-        totalItems: items.length,
+        productId: product.id,
+        productName: product.name,
+        category: product.category,
+        brand: selectedBrand,
+        grade: selectedGrade,
+        quantity: parseInt(quantity),
+        customerName,
+        companyName,
+        deliveryLocation,
+        email,
+        phone,
+        createdAt: new Date(),
       };
 
-      const result = await submitRFQ(rfqData);
+      // Post to backend RFQ endpoint
+      const response = await fetch(
+        'https://suppliermatrix-backend.onrender.com/api/rfq/create',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(rfqData),
+        }
+      );
 
-      if (result.success) {
-        Alert.alert('Success', 'Your RFQ has been submitted successfully!');
-        // Reset form
-        setItems([
-          { id: '1', productName: '', category: '', quantity: '', brand: '', grade: '' },
-        ]);
-        setFormData({
-          customerName: '',
-          company: '',
-          location: '',
-          email: '',
-          phone: '',
-        });
+      if (response.ok) {
+        // Send WhatsApp message to admin
+        const whatsappMessage = `I need quotation for below materials:
+
+MATERIAL REQUIREMENTS
+Total Items: 1
+
+Item 1
+Product: ${rfqData.productName}
+Category: ${rfqData.category}
+Brand: ${rfqData.brand}
+Material/Grade: ${rfqData.grade}
+Quantity: ${rfqData.quantity} MT
+
+CUSTOMER DETAILS
+Name: ${rfqData.customerName}
+Company: ${rfqData.companyName}
+Delivery Location: ${rfqData.deliveryLocation}
+Email: ${rfqData.email}
+Phone: ${rfqData.phone}`;
+        
+        const whatsappUrl = `https://wa.me/919136242706?text=${encodeURIComponent(whatsappMessage)}`;
+        
+        Alert.alert(
+          'Success!',
+          'Your RFQ has been submitted successfully!\n\nWe will contact you at +91 91362 42706 with a quotation.',
+          [
+            {
+              text: 'Share on WhatsApp',
+              onPress: () => {
+                // Open WhatsApp
+                window.open(whatsappUrl, '_blank');
+                // Call the onAddToCart callback
+                onAddToCart(rfqData);
+                resetForm();
+                onClose();
+              },
+            },
+            {
+              text: 'OK',
+              onPress: () => {
+                // Call the onAddToCart callback
+                onAddToCart(rfqData);
+                resetForm();
+                onClose();
+              },
+            },
+          ]
+        );
       } else {
-        Alert.alert('Error', result.message);
+        Alert.alert('Error', 'Failed to submit RFQ. Please try again.');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to submit RFQ. Please try again.');
+      console.log('RFQ Submission Error:', error);
+      Alert.alert('Error', 'Network error. Please check your connection.');
     } finally {
       setLoading(false);
     }
   };
 
-  const ItemCard = ({ item }: { item: RFQItem }) => (
-    <View style={styles.itemCard}>
-      <View style={styles.itemHeader}>
-        <Text style={styles.itemNumber}>Item #{items.indexOf(item) + 1}</Text>
-        <TouchableOpacity onPress={() => removeItem(item.id)}>
-          <MaterialCommunityIcons name="delete" size={18} color={colors.error} />
-        </TouchableOpacity>
-      </View>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Product Name *"
-        placeholderTextColor={colors.textLight}
-        value={item.productName}
-        onChangeText={(value) => updateItem(item.id, 'productName', value)}
-      />
-
-      <View style={styles.rowInputs}>
-        <TextInput
-          style={[styles.input, styles.halfInput]}
-          placeholder="Category"
-          placeholderTextColor={colors.textLight}
-          value={item.category}
-          onChangeText={(value) => updateItem(item.id, 'category', value)}
-        />
-        <TextInput
-          style={[styles.input, styles.halfInput]}
-          placeholder="Quantity *"
-          placeholderTextColor={colors.textLight}
-          value={item.quantity}
-          onChangeText={(value) => updateItem(item.id, 'quantity', value)}
-          keyboardType="number-pad"
-        />
-      </View>
-
-      <View style={styles.rowInputs}>
-        <TextInput
-          style={[styles.input, styles.halfInput]}
-          placeholder="Brand"
-          placeholderTextColor={colors.textLight}
-          value={item.brand}
-          onChangeText={(value) => updateItem(item.id, 'brand', value)}
-        />
-        <TextInput
-          style={[styles.input, styles.halfInput]}
-          placeholder="Grade"
-          placeholderTextColor={colors.textLight}
-          value={item.grade}
-          onChangeText={(value) => updateItem(item.id, 'grade', value)}
-        />
-      </View>
-    </View>
-  );
+  const resetForm = () => {
+    setStep(1);
+    setSelectedBrand(null);
+    setSelectedGrade(null);
+    setQuantity('1');
+    setShowBrandDropdown(false);
+    setShowGradeDropdown(false);
+    setCustomerName('');
+    setCompanyName('');
+    setDeliveryLocation('');
+    setEmail('');
+    setPhone('');
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Request for Quote</Text>
-          <Text style={styles.subtitle}>Get quotes from multiple suppliers</Text>
-        </View>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <SafeAreaView style={styles.container}>
+        <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={step === 2 ? () => setStep(1) : onClose}>
+              <MaterialCommunityIcons
+                name={step === 2 ? 'arrow-left' : 'close'}
+                size={28}
+                color={COLORS.primary}
+              />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Request for Quote</Text>
+            <View style={{ width: 28 }} />
+          </View>
 
-        {/* Tabs */}
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'items' && styles.tabActive]}
-            onPress={() => setActiveTab('items')}
-          >
-            <MaterialCommunityIcons name="package-multiple" size={18} color={activeTab === 'items' ? colors.primary : colors.textLight} />
-            <Text style={[styles.tabText, activeTab === 'items' && styles.tabTextActive]}>
-              Items ({items.length})
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'details' && styles.tabActive]}
-            onPress={() => setActiveTab('details')}
-          >
-            <MaterialCommunityIcons name="information" size={18} color={activeTab === 'details' ? colors.primary : colors.textLight} />
-            <Text style={[styles.tabText, activeTab === 'details' && styles.tabTextActive]}>
-              Details
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Items Tab */}
-        {activeTab === 'items' && (
-          <View style={styles.tabContent}>
-            <View style={styles.itemsList}>
-              {items.map((item) => (
-                <ItemCard key={item.id} item={item} />
-              ))}
+          {/* Step Indicator */}
+          <View style={styles.stepContainer}>
+            <View style={styles.stepIndicator}>
+              <View style={[styles.stepCircle, step >= 1 && styles.stepCircleActive]}>
+                <Text style={[styles.stepText, step >= 1 && styles.stepTextActive]}>1</Text>
+              </View>
+              <View
+                style={[styles.stepLine, step === 2 && styles.stepLineActive]}
+              />
+              <View style={[styles.stepCircle, step >= 2 && styles.stepCircleActive]}>
+                <Text style={[styles.stepText, step >= 2 && styles.stepTextActive]}>2</Text>
+              </View>
             </View>
-
-            <TouchableOpacity style={styles.addItemButton} onPress={addItem}>
-              <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
-              <Text style={styles.addItemButtonText}>Add Another Item</Text>
-            </TouchableOpacity>
+            <Text style={styles.stepDescription}>
+              {step === 1 ? 'Review your cart' : 'Enter your details'}
+            </Text>
           </View>
-        )}
 
-        {/* Details Tab */}
-        {activeTab === 'details' && (
-          <View style={styles.tabContent}>
-            <Text style={styles.sectionLabel}>Your Details</Text>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            {step === 1 ? (
+              // STEP 1 - Review Cart
+              <>
+                {/* Product Image */}
+                <View style={styles.imageContainer}>
+                  {imageSource ? (
+                    <Image source={imageSource} style={styles.productImage} resizeMode="cover" />
+                  ) : (
+                    <View style={styles.imagePlaceholder}>
+                      <MaterialCommunityIcons name="package-variant" size={60} color={COLORS.border} />
+                    </View>
+                  )}
+                </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Full Name *"
-              placeholderTextColor={colors.textLight}
-              value={formData.customerName}
-              onChangeText={(value) => setFormData({ ...formData, customerName: value })}
-            />
+                {/* Product Name & Category */}
+                <Text style={styles.productName}>{product.name}</Text>
+                <Text style={styles.productCategory}>
+                  {product.category?.replace('-', ' ').toUpperCase()}
+                </Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Company Name *"
-              placeholderTextColor={colors.textLight}
-              value={formData.company}
-              onChangeText={(value) => setFormData({ ...formData, company: value })}
-            />
+                {/* Review Cart Section */}
+                <View style={styles.cartSection}>
+                  <Text style={styles.sectionTitle}>Your Cart</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Location / City"
-              placeholderTextColor={colors.textLight}
-              value={formData.location}
-              onChangeText={(value) => setFormData({ ...formData, location: value })}
-            />
+                  {/* Cart Item */}
+                  <View style={styles.cartItem}>
+                    <View style={styles.cartItemLeft}>
+                      <MaterialCommunityIcons name="package-variant-closed" size={32} color={COLORS.primary} />
+                    </View>
+                    <View style={styles.cartItemDetails}>
+                      <Text style={styles.cartItemName}>{product.name}</Text>
+                      <Text style={styles.cartItemCategory}>{product.category?.replace('-', ' ')}</Text>
+                      <Text style={styles.cartItemSpec}>Category: {product.category?.replace('-', ' ').toUpperCase()}</Text>
+                    </View>
+                  </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Email Address *"
-              placeholderTextColor={colors.textLight}
-              value={formData.email}
-              onChangeText={(value) => setFormData({ ...formData, email: value })}
-              keyboardType="email-address"
-            />
+                  {/* Selection Section */}
+                  <View style={styles.formSection}>
+                    {/* Select Brand */}
+                    <View style={styles.formField}>
+                      <Text style={styles.fieldLabel}>
+                        Select Brand <Text style={styles.required}>*</Text>
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.dropdown}
+                        onPress={() => setShowBrandDropdown(!showBrandDropdown)}
+                      >
+                        <Text style={[styles.dropdownText, !selectedBrand && styles.placeholder]}>
+                          {selectedBrand || 'Choose a preferred brand'}
+                        </Text>
+                        <MaterialCommunityIcons
+                          name={showBrandDropdown ? 'chevron-up' : 'chevron-down'}
+                          size={20}
+                          color={COLORS.primary}
+                        />
+                      </TouchableOpacity>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Phone Number *"
-              placeholderTextColor={colors.textLight}
-              value={formData.phone}
-              onChangeText={(value) => setFormData({ ...formData, phone: value })}
-              keyboardType="phone-pad"
-            />
+                      {showBrandDropdown && (
+                        <View style={styles.dropdownList}>
+                          {brands.map((brand, idx) => (
+                            <TouchableOpacity
+                              key={idx}
+                              style={[
+                                styles.dropdownItem,
+                                selectedBrand === brand && styles.dropdownItemSelected,
+                              ]}
+                              onPress={() => {
+                                setSelectedBrand(brand);
+                                setShowBrandDropdown(false);
+                              }}
+                            >
+                              <Text
+                                style={[
+                                  styles.dropdownItemText,
+                                  selectedBrand === brand && styles.dropdownItemTextSelected,
+                                ]}
+                              >
+                                {brand}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      )}
+                    </View>
 
-            <TouchableOpacity
-              style={[styles.submitButton, loading && styles.submitButtonDisabled]}
-              onPress={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <>
-                  <MaterialCommunityIcons name="send" size={18} color="#fff" />
-                  <Text style={styles.submitButtonText}>Submit RFQ</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+                    {/* Select Material Grade */}
+                    <View style={styles.formField}>
+                      <Text style={styles.fieldLabel}>
+                        Select Material Grade <Text style={styles.required}>*</Text>
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.dropdown}
+                        onPress={() => setShowGradeDropdown(!showGradeDropdown)}
+                      >
+                        <Text style={[styles.dropdownText, !selectedGrade && styles.placeholder]}>
+                          {selectedGrade || 'Choose material specification'}
+                        </Text>
+                        <MaterialCommunityIcons
+                          name={showGradeDropdown ? 'chevron-up' : 'chevron-down'}
+                          size={20}
+                          color={COLORS.primary}
+                        />
+                      </TouchableOpacity>
+
+                      {showGradeDropdown && (
+                        <View style={styles.dropdownList}>
+                          {grades.map((grade, idx) => (
+                            <TouchableOpacity
+                              key={idx}
+                              style={[
+                                styles.dropdownItem,
+                                selectedGrade === grade && styles.dropdownItemSelected,
+                              ]}
+                              onPress={() => {
+                                setSelectedGrade(grade);
+                                setShowGradeDropdown(false);
+                              }}
+                            >
+                              <Text
+                                style={[
+                                  styles.dropdownItemText,
+                                  selectedGrade === grade && styles.dropdownItemTextSelected,
+                                ]}
+                              >
+                                {grade}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Quantity */}
+                    <View style={styles.formField}>
+                      <Text style={styles.fieldLabel}>
+                        Quantity (Metric Tons) <Text style={styles.required}>*</Text>
+                      </Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Enter quantity"
+                        placeholderTextColor={COLORS.textLight}
+                        value={quantity}
+                        onChangeText={setQuantity}
+                        keyboardType="decimal-pad"
+                      />
+                      <Text style={styles.minimumOrder}>
+                        Delivery: {product.specifications?.delivery || 'Pan India'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Next Button */}
+                <TouchableOpacity
+                  style={styles.nextButton}
+                  onPress={handleNextStep}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.nextButtonText}>Next</Text>
+                  <MaterialCommunityIcons name="arrow-right" size={20} color={COLORS.white} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              // STEP 2 - Customer Details
+              <>
+                <View style={styles.customerSection}>
+                  <Text style={styles.sectionTitle}>Customer Information</Text>
+
+                  {/* Name */}
+                  <View style={styles.formField}>
+                    <Text style={styles.fieldLabel}>
+                      Name <Text style={styles.required}>*</Text>
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Your name"
+                      placeholderTextColor={COLORS.textLight}
+                      value={customerName}
+                      onChangeText={setCustomerName}
+                    />
+                  </View>
+
+                  {/* Company */}
+                  <View style={styles.formField}>
+                    <Text style={styles.fieldLabel}>
+                      Company <Text style={styles.required}>*</Text>
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Your company name"
+                      placeholderTextColor={COLORS.textLight}
+                      value={companyName}
+                      onChangeText={setCompanyName}
+                    />
+                  </View>
+
+                  {/* Delivery Location */}
+                  <View style={styles.formField}>
+                    <Text style={styles.fieldLabel}>
+                      Delivery Location <Text style={styles.required}>*</Text>
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="City / Location"
+                      placeholderTextColor={COLORS.textLight}
+                      value={deliveryLocation}
+                      onChangeText={setDeliveryLocation}
+                    />
+                  </View>
+
+                  {/* Email */}
+                  <View style={styles.formField}>
+                    <Text style={styles.fieldLabel}>
+                      Email <Text style={styles.required}>*</Text>
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Your email"
+                      placeholderTextColor={COLORS.textLight}
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                    />
+                  </View>
+
+                  {/* Phone */}
+                  <View style={styles.formField}>
+                    <Text style={styles.fieldLabel}>
+                      Phone <Text style={styles.required}>*</Text>
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Your phone number"
+                      placeholderTextColor={COLORS.textLight}
+                      value={phone}
+                      onChangeText={setPhone}
+                      keyboardType="phone-pad"
+                    />
+                  </View>
+                </View>
+
+                {/* Submit Button */}
+                <TouchableOpacity
+                  style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+                  onPress={handleSubmitRFQ}
+                  disabled={loading}
+                  activeOpacity={0.8}
+                >
+                  {loading ? (
+                    <>
+                      <Text style={styles.submitButtonText}>Submitting...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <MaterialCommunityIcons name="check-circle" size={20} color={COLORS.white} />
+                      <Text style={styles.submitButtonText}>Submit RFQ</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
+          </ScrollView>
+        </LinearGradient>
+      </SafeAreaView>
+    </Modal>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background,
   },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-    backgroundColor: colors.background,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: colors.textLight,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  tab: {
+
+  gradient: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-    gap: 6,
   },
-  tabActive: {
-    borderBottomColor: colors.primary,
-  },
-  tabText: {
-    fontSize: 13,
-    color: colors.textLight,
-    fontWeight: '500',
-  },
-  tabTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  tabContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  itemsList: {
-    gap: 12,
-    marginBottom: 16,
-  },
-  itemCard: {
-    backgroundColor: colors.card,
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  itemHeader: {
+
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  itemNumber: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  input: {
-    backgroundColor: colors.backgroundAlt,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: colors.text,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  rowInputs: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  halfInput: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  addItemButton: {
-    flexDirection: 'row',
-    backgroundColor: colors.accent,
-    borderRadius: 8,
-    paddingVertical: 12,
     paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(193, 87, 56, 0.1)',
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    fontFamily: 'sans-serif',
+  },
+
+  stepContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+
+  stepIndicator: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: 8,
+    marginBottom: 8,
   },
-  addItemButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
+
+  stepCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.border,
   },
-  sectionLabel: {
-    fontSize: 14,
+
+  stepCircleActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+
+  stepText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textLight,
+    fontFamily: 'sans-serif',
+  },
+
+  stepTextActive: {
+    color: COLORS.white,
+  },
+
+  stepLine: {
+    width: 40,
+    height: 2,
+    backgroundColor: COLORS.border,
+    marginHorizontal: 8,
+  },
+
+  stepLineActive: {
+    backgroundColor: COLORS.primary,
+  },
+
+  stepDescription: {
+    fontSize: 13,
     fontWeight: '600',
-    color: colors.text,
+    color: COLORS.textLight,
+    textAlign: 'center',
+    fontFamily: 'sans-serif',
+  },
+
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+
+  imageContainer: {
+    width: '100%',
+    height: 180,
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 14,
+    backgroundColor: COLORS.secondary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+
+  productImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  imagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.secondary,
+  },
+
+  productName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+    fontFamily: 'sans-serif',
+  },
+
+  productCategory: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginBottom: 16,
+    letterSpacing: 0.5,
+    fontFamily: 'sans-serif',
+  },
+
+  cartSection: {
+    marginBottom: 20,
+  },
+
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.text,
     marginBottom: 12,
+    fontFamily: 'sans-serif',
   },
-  submitButton: {
-    backgroundColor: colors.primary,
+
+  cartItem: {
+    flexDirection: 'row',
+    padding: 14,
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  cartItemLeft: {
+    width: 50,
+    height: 50,
     borderRadius: 8,
-    paddingVertical: 14,
+    backgroundColor: 'rgba(193, 87, 56, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  cartItemDetails: {
+    flex: 1,
+  },
+
+  cartItemName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.text,
+    fontFamily: 'sans-serif',
+  },
+
+  cartItemCategory: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: COLORS.textLight,
+    marginTop: 2,
+    fontFamily: 'sans-serif',
+  },
+
+  cartItemSpec: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginTop: 2,
+    fontFamily: 'sans-serif',
+  },
+
+  formSection: {
+    marginTop: 12,
+  },
+
+  customerSection: {
+    marginBottom: 20,
+  },
+
+  formField: {
+    marginBottom: 16,
+  },
+
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+    fontFamily: 'sans-serif',
+  },
+
+  required: {
+    color: COLORS.primary,
+  },
+
+  dropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderRadius: 9,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+  },
+
+  dropdownText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
+    flex: 1,
+    fontFamily: 'sans-serif',
+  },
+
+  placeholder: {
+    color: COLORS.textLight,
+    fontWeight: '500',
+  },
+
+  dropdownList: {
+    marginTop: 6,
+    borderRadius: 9,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  dropdownItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    backgroundColor: COLORS.white,
+  },
+
+  dropdownItemSelected: {
+    backgroundColor: 'rgba(193, 87, 56, 0.08)',
+  },
+
+  dropdownItemText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
+    fontFamily: 'sans-serif',
+  },
+
+  dropdownItemTextSelected: {
+    color: COLORS.primary,
+    fontWeight: '700',
+  },
+
+  input: {
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderRadius: 9,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
+    fontFamily: 'sans-serif',
+  },
+
+  minimumOrder: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: COLORS.textLight,
+    marginTop: 5,
+    fontFamily: 'sans-serif',
+  },
+
+  nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    borderRadius: 9,
+    backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+    marginBottom: 20,
   },
+
+  nextButtonText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.white,
+    fontFamily: 'sans-serif',
+  },
+
+  submitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    borderRadius: 9,
+    backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+    marginBottom: 20,
+  },
+
   submitButtonDisabled: {
     opacity: 0.6,
   },
+
   submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.white,
+    fontFamily: 'sans-serif',
   },
 });
+
+export default RFQScreen;

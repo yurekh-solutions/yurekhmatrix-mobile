@@ -12,8 +12,12 @@ import {
   Linking,
   Dimensions,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/src/styles/colors';
+
+// WhatsApp contact number
+const WHATSAPP_NUMBER = '919136242706';
 
 const { width } = Dimensions.get('window');
 
@@ -49,7 +53,7 @@ const contactDetails: ContactInfo[] = [
   },
 ];
 
-export default function ContactScreen() {
+export default function ContactScreen({ navigation }: any) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -109,6 +113,26 @@ export default function ContactScreen() {
         subject: '',
         message: '',
       });
+
+      // Offer WhatsApp option
+      const whatsappMessage = `Hi, I just sent a contact message:
+
+Subject: ${formData.subject}
+Message: ${formData.message.substring(0, 100)}...
+
+Please get back to me.`;
+      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
+      
+      setTimeout(() => {
+        Alert.alert(
+          'Need Faster Response?',
+          'Would you like to also reach us via WhatsApp?',
+          [
+            { text: 'No Thanks', style: 'cancel' },
+            { text: 'Open WhatsApp', onPress: () => Linking.openURL(whatsappUrl) },
+          ]
+        );
+      }, 500);
     } catch (error) {
       Alert.alert('Error', 'Failed to send message. Please try again.');
     } finally {
@@ -138,10 +162,34 @@ export default function ContactScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header */}
+        {/* Header with Back Button */}
         <View style={styles.header}>
-          <Text style={styles.title}>Contact Us</Text>
-          <Text style={styles.subtitle}>Get in touch with our support team</Text>
+          <View style={styles.headerRow}>
+            <TouchableOpacity onPress={() => navigation?.goBack?.()} style={styles.backBtn}>
+              <LinearGradient
+                colors={[colors.primary, colors.gradient2 || '#a84a2f']}
+                style={styles.backBtnGradient}
+              >
+                <Ionicons name="chevron-back" size={22} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.title}>Contact Us</Text>
+              <Text style={styles.subtitle}>Get in touch with our support team</Text>
+            </View>
+          </View>
+          
+          {/* Quick WhatsApp Contact */}
+          <TouchableOpacity 
+            style={styles.whatsappQuickBtn}
+            onPress={() => {
+              const msg = 'Hi, I need help with a query. Please assist.';
+              Linking.openURL(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`);
+            }}
+          >
+            <Ionicons name="logo-whatsapp" size={18} color="#25D366" />
+            <Text style={styles.whatsappQuickText}>Chat on WhatsApp</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Contact Info Cards */}
@@ -264,15 +312,55 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backBtn: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  backBtnGradient: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textLight,
+  },
+  whatsappQuickBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E7F9ED',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 8,
+    marginTop: 12,
+    alignSelf: 'flex-start',
+  },
+  whatsappQuickText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#25D366',
   },
   contactCardsContainer: {
     paddingHorizontal: 16,

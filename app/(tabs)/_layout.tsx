@@ -1,11 +1,23 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { colors } from '@/src/styles/colors';
+
+const COLORS = {
+  primary: '#c15738', // Terracotta
+  primaryLight: '#d66f4f',
+  secondary: '#f5ede3', // Warm cream
+  background: '#faf8f6',
+  white: '#ffffff',
+  text: '#332319',
+  textLight: '#8b7355',
+  border: '#e8dfd5',
+};
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -13,16 +25,27 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textLight,
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.textLight,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
+          backgroundColor: COLORS.white,
+          borderTopColor: COLORS.border,
           borderTopWidth: 1,
-          paddingBottom: 8,
-          paddingTop: 8,
+          paddingBottom: 10,
+          paddingTop: 10,
+          height: 70,
+          elevation: 8,
+          shadowColor: COLORS.primary,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          marginTop: 4,
         },
       }}>
       {/* Home Tab */}
@@ -30,8 +53,10 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="home" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+              <Ionicons name={focused ? 'home' : 'home-outline'} size={26} color={color} />
+            </View>
           ),
         }}
       />
@@ -41,8 +66,10 @@ export default function TabLayout() {
         name="products"
         options={{
           title: 'Products',
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="shopping-outline" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+              <MaterialCommunityIcons name={focused ? 'shopping' : 'shopping-outline'} size={26} color={color} />
+            </View>
           ),
         }}
       />
@@ -52,8 +79,10 @@ export default function TabLayout() {
         name="rfq"
         options={{
           title: 'RFQ',
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="file-document" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+              <MaterialCommunityIcons name={focused ? 'file-document' : 'file-document-outline'} size={26} color={color} />
+            </View>
           ),
         }}
       />
@@ -62,9 +91,11 @@ export default function TabLayout() {
       <Tabs.Screen
         name="material"
         options={{
-          title: 'Material',
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="comment-multiple" size={24} color={color} />
+          title: 'Chat',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+              <MaterialCommunityIcons name={focused ? 'chat-multiple' : 'chat-multiple-outline'} size={26} color={color} />
+            </View>
           ),
         }}
       />
@@ -73,12 +104,27 @@ export default function TabLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          title: 'More',
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="menu" size={24} color={color} />
+          title: 'Account',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+              <Ionicons name={focused ? 'person' : 'person-outline'} size={26} color={color} />
+            </View>
           ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+  },
+  activeIconContainer: {
+    backgroundColor: COLORS.primary + '15',
+  },
+});

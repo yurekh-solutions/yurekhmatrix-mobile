@@ -19,7 +19,7 @@ interface JobOpening {
   location: string;
   type: 'Full-time' | 'Part-time' | 'Contract';
   level: 'Entry' | 'Mid' | 'Senior';
-  description: string;
+  description: string;  
   requirements: string[];
   salary: string;
 }
