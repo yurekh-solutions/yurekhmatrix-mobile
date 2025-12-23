@@ -214,10 +214,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.addToRfqButton}
             onPress={() => {
-              // Navigate to RFQ tab with selected product
-              if (navigation && navigation.navigate) {
-                navigation.navigate('rfq', { product: item });
-              }
+              // Navigate to product details screen to view full product info
+              setSelectedProduct(item);
             }}
             activeOpacity={0.8}
           >
