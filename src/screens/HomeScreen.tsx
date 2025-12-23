@@ -347,7 +347,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   
                       {/* Title */}
                       <Text style={styles.bannerTitle}>
-                        Smart Material{\n}Procurement
+                        Smart Material{'\n'}Procurement
                       </Text>
   
                       {/* Description */}
@@ -615,8 +615,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: COLORS.text,
     fontWeight: '500',
-    outlineWidth: 0,
-    outlineStyle: 'none',
     borderWidth: 0,
     borderColor: 'transparent',
   },
@@ -706,13 +704,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.4)',
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
-  },
-
-  badgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.white,
-    letterSpacing: 0.3,
   },
 
   bannerSubtitle: {
