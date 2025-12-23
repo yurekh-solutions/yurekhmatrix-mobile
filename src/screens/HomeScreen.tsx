@@ -19,6 +19,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getProducts } from '../lib/api';
 import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
+import BottomDrawer from '../components/BottomDrawer';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -70,6 +71,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartCount, setCartCount] = useState(0);
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   const categories: Category[] = [
     { id: '1', name: 'Mild Steel', icon: 'hammer', color: '#c15738', value: 'mild-steel' },
@@ -276,10 +278,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
         {/* Header */}
         <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => setDrawerVisible(true)}
+          >
+            <MaterialCommunityIcons name="menu" size={28} color={COLORS.primary} />
+          </TouchableOpacity>
+          
           <View>
             <Text style={styles.greeting}>Welcome Back!</Text>
             <Text style={styles.location}>RitzYard</Text>
           </View>
+          
           <TouchableOpacity 
             style={styles.cartButton}
             onPress={() => {
@@ -491,6 +501,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       </LinearGradient>
     </View>
       )}
+      
+      {/* Bottom Drawer */}
+      <BottomDrawer
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+        navigation={navigation}
+      />
     </>
   );
 };
@@ -513,6 +530,18 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 16,
+    gap: 12,
+  },
+
+  menuButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'rgba(193, 87, 56, 0.1)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(193, 87, 56, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   greeting: {
