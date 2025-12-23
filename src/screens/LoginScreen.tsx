@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
     flexWrap: 'wrap',
-  }
+  },
 
   footerText: {
     fontSize: 13,
