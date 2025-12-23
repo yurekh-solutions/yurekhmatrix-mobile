@@ -11,12 +11,14 @@ import { colors } from '@/src/styles/colors';
 const COLORS = {
   primary: '#c15738', // Terracotta
   primaryLight: '#d66f4f',
+  primaryDark: '#8b3a25',
   secondary: '#f5ede3', // Warm cream
   background: '#faf8f6',
   white: '#ffffff',
   text: '#332319',
   textLight: '#8b7355',
   border: '#e8dfd5',
+  accent: '#e8a870',
 };
 
 export default function TabLayout() {
@@ -32,30 +34,31 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: COLORS.white,
           borderTopColor: COLORS.border,
-          borderTopWidth: 1,
-          paddingBottom: 10,
+          borderTopWidth: 1.2,
+          paddingBottom: 12,
           paddingTop: 10,
-          height: 70,
-          elevation: 8,
+          height: 76,
+          elevation: 12,
           shadowColor: COLORS.primary,
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
-          marginTop: 4,
+          fontWeight: '700',
+          marginTop: 6,
+          letterSpacing: 0.3,
         },
       }}>
-      {/* Home Tab */}
+      {/* Discover Tab */}
       <Tabs.Screen
-        name="index"
+        name="explore"
         options={{
-          title: 'Home',
+          title: 'Discover',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
-              <Ionicons name={focused ? 'home' : 'home-outline'} size={26} color={color} />
+              <MaterialCommunityIcons name={focused ? 'compass' : 'compass-outline'} size={28} color={color} />
             </View>
           ),
         }}
@@ -68,46 +71,46 @@ export default function TabLayout() {
           title: 'Products',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
-              <MaterialCommunityIcons name={focused ? 'shopping' : 'shopping-outline'} size={26} color={color} />
+              <MaterialCommunityIcons name={focused ? 'shopping' : 'shopping-outline'} size={28} color={color} />
             </View>
           ),
         }}
       />
       
-      {/* RFQ Tab */}
+      {/* RFQ/Cart Tab */}
       <Tabs.Screen
         name="rfq"
         options={{
-          title: 'RFQ',
+          title: 'RFQ/Cart',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
-              <MaterialCommunityIcons name={focused ? 'file-document' : 'file-document-outline'} size={26} color={color} />
+              <MaterialCommunityIcons name={focused ? 'cart' : 'cart-outline'} size={28} color={color} />
             </View>
           ),
         }}
       />
       
-      {/* Material Inquiry Tab */}
+      {/* Chat/Material Tab */}
       <Tabs.Screen
         name="material"
         options={{
-          title: 'Chat',
+          title: 'Inquire',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
-              <MaterialCommunityIcons name={focused ? 'chat-multiple' : 'chat-multiple-outline'} size={26} color={color} />
+              <MaterialCommunityIcons name={focused ? 'message-text' : 'message-text-outline'} size={28} color={color} />
             </View>
           ),
         }}
       />
       
-      {/* More Tab (Drawer) */}
+      {/* Account Tab */}
       <Tabs.Screen
         name="more"
         options={{
           title: 'Account',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
-              <Ionicons name={focused ? 'person' : 'person-outline'} size={26} color={color} />
+              <MaterialCommunityIcons name={focused ? 'account-circle' : 'account-circle-outline'} size={28} color={color} />
             </View>
           ),
         }}
@@ -118,13 +121,15 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   iconContainer: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 14,
   },
   activeIconContainer: {
-    backgroundColor: COLORS.primary + '15',
+    backgroundColor: COLORS.primary + '20',
+    borderWidth: 1,
+    borderColor: COLORS.primary + '30',
   },
 });
