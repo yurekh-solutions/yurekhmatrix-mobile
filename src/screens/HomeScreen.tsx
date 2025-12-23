@@ -272,220 +272,222 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           navigation={navigation}
         />
       ) : (
-    <View style={styles.container}>
-      <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.cartButton}
-            onPress={() => {
-              // Navigate to RFQ (cart) with empty state ready
-              if (navigation && navigation.navigate) {
-                navigation.navigate('rfq');
-              }
-            }}
-          >
-            <MaterialCommunityIcons name="cart" size={24} color={COLORS.primary} />
-            {cartCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{cartCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchSection}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search" size={20} color={COLORS.textLight} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search materials..."
-              placeholderTextColor={COLORS.textLight}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery ? (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color={COLORS.textLight} />
-              </TouchableOpacity>
-            ) : null}
-          </View>
-          <TouchableOpacity style={styles.filterButton}>
-            <MaterialCommunityIcons name="tune" size={24} color={COLORS.white} />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          scrollEventThrottle={16}
-        >
-          {/* Hero Banner Section */}
-          <View style={styles.bannerSection}>
-            <LinearGradient
-              colors={['rgba(193, 87, 56, 0.92)', 'rgba(139, 58, 37, 0.88)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.bannerContainer}
-            >
-              {/* Glass Overlay Effect */}
-              <View style={styles.bannerGlassOverlay} />
-              
-              {/* Decorative Gradient Circles */}
-              <View style={styles.decorativeCircle1} />
-              <View style={styles.decorativeCircle2} />
-
-              {/* Banner Content */}
-              <View style={styles.bannerContent}>
-                <View style={styles.bannerText}>
-                  {/* Badge */}
-                  <View style={styles.badgeContainer}>
-                    <MaterialCommunityIcons name="star-circle" size={18} color={COLORS.white} />
-                    <Text style={styles.badgeText}>Next-Gen Procurement Platform</Text>
-                  </View>
-
-                  {/* Title */}
-                  <Text style={styles.bannerTitle}>
-                    Smart Material{'\n'}Procurement
-                  </Text>
-
-                  {/* Description */}
-                  <Text style={styles.bannerDescription}>
-                    AI-powered procurement platform revolutionizing how businesses source construction materials
-                  </Text>
-
-                  {/* Call to Action Button */}
-                  <TouchableOpacity 
-                    style={styles.ctalButton}
-                    onPress={() => {
-                      // Navigate to Products tab
-                      if (navigation && navigation.navigate) {
-                        navigation.navigate('products');
-                      }
-                    }}
-                    activeOpacity={0.85}
-                  >
-                    <LinearGradient
-                      colors={['#ffffff', '#f5f5f5']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.ctaGradient}
-                    >
-                      <MaterialCommunityIcons name="arrow-right-circle" size={20} color={COLORS.primary} />
-                      <Text style={styles.ctaButtonText}>Explore Now</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </LinearGradient>
-          </View>
-
-          {/* Featured Products Section */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Products</Text>
-            <TouchableOpacity
-              onPress={() => {
-                // Navigate to Products tab
-                if (navigation && navigation.navigate) {
-                  navigation.navigate('products');
-                }
-              }}
-            >
-              <Text style={styles.seeAll}>See All →</Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.featuredScroll}
-            scrollEventThrottle={16}
-          >
-            {products.slice(0, 6).map((item, idx) => (
+        <View style={styles.container}>
+          <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
+            {/* Header */}
+            <View style={styles.header}>
               <TouchableOpacity
-                key={idx}
-                onPress={() => setSelectedProduct(item)}
+                style={styles.cartButton}
+                onPress={() => {
+                  // Navigate to RFQ (cart) with empty state ready
+                  if (navigation && navigation.navigate) {
+                    navigation.navigate('rfq');
+                  }
+                }}
               >
-                {renderFeaturedCard(item, idx)}
+                <MaterialCommunityIcons name="cart" size={24} color={COLORS.primary} />
+                {cartCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{cartCount}</Text>
+                  </View>
+                )}
               </TouchableOpacity>
-            ))}
-          </ScrollView>
-
-          {/* Categories */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesScroll}
-            scrollEventThrottle={16}
-          >
-            <TouchableOpacity
-              onPress={() => setSelectedCategory('all')}
-              style={[
-                styles.categoryButton,
-                selectedCategory === 'all' && styles.categoryButtonActive,
-              ]}
-            >
-              <View
-                style={[
-                  styles.categoryIconBox,
-                  { backgroundColor: COLORS.primary + '20' },
-                  selectedCategory === 'all' && {
-                    backgroundColor: COLORS.primary + '40',
-                  },
-                ]}
-              >
-                <MaterialCommunityIcons name="grid" size={24} color={COLORS.primary} />
+            </View>
+  
+            {/* Search Bar */}
+            <View style={styles.searchSection}>
+              <View style={styles.searchBar}>
+                <Ionicons name="search" size={20} color={COLORS.textLight} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search materials..."
+                  placeholderTextColor={COLORS.textLight}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+                {searchQuery ? (
+                  <TouchableOpacity onPress={() => setSearchQuery('')}>
+                    <Ionicons name="close-circle" size={20} color={COLORS.textLight} />
+                  </TouchableOpacity>
+                ) : null}
               </View>
-              <Text
-                style={[
-                  styles.categoryButtonText,
-                  selectedCategory === 'all' && styles.categoryButtonTextActive,
-                ]}
-              >
-                All
-              </Text>
-            </TouchableOpacity>
-            {categories.map(renderCategoryButton)}
-          </ScrollView>
-
-          {/* Products List */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {selectedCategory === 'all' ? 'All Products' : 'Available Products'}
-            </Text>
-          </View>
-
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Loading products...</Text>
+              <TouchableOpacity style={styles.filterButton}>
+                <MaterialCommunityIcons name="tune" size={24} color={COLORS.white} />
+              </TouchableOpacity>
             </View>
-          ) : filteredProducts.length > 0 ? (
-            <FlatList
-              data={filteredProducts}
-              numColumns={2}
-              columnWrapperStyle={styles.columnWrapper}
-              renderItem={({ item }) => renderProductCard(item)}
-              keyExtractor={(item) => item._id || item.id || item.name}
+  
+            <ScrollView
               showsVerticalScrollIndicator={false}
-              scrollEnabled={false}
-              contentContainerStyle={styles.gridContent}
-            />
-          ) : (
-            <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="inbox-multiple" size={64} color={COLORS.border} />
-              <Text style={styles.emptyText}>No products found</Text>
-              <Text style={styles.emptySubtext}>Try a different search or category</Text>
-            </View>
-          )}
-        </ScrollView>
-      </LinearGradient>
-    </View>
+              contentContainerStyle={styles.scrollContent}
+              scrollEventThrottle={16}
+            >
+              {/* Hero Banner Section */}
+              <View style={styles.bannerSection}>
+                <LinearGradient
+                  colors={['rgba(193, 87, 56, 0.92)', 'rgba(139, 58, 37, 0.88)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.bannerContainer}
+                >
+                  {/* Glass Overlay Effect */}
+                  <View style={styles.bannerGlassOverlay} />
+                    
+                  {/* Decorative Gradient Circles */}
+                  <View style={styles.decorativeCircle1} />
+                  <View style={styles.decorativeCircle2} />
+  
+                  {/* Banner Content */}
+                  <View style={styles.bannerContent}>
+                    <View style={styles.bannerText}>
+                      {/* Badge */}
+                      <View style={styles.badgeContainer}>
+                        <MaterialCommunityIcons name="star-circle" size={18} color={COLORS.white} />
+                        <Text style={styles.badgeText}>Next-Gen Procurement Platform</Text>
+                      </View>
+  
+                      {/* Title */}
+                      <Text style={styles.bannerTitle}>
+                        Smart Material{\n}Procurement
+                      </Text>
+  
+                      {/* Description */}
+                      <Text style={styles.bannerDescription}>
+                        AI-powered procurement platform revolutionizing how businesses source construction materials
+                      </Text>
+  
+                      {/* Call to Action Button */}
+                      <TouchableOpacity 
+                        style={styles.ctalButton}
+                        onPress={() => {
+                          // Navigate to Products tab
+                          if (navigation && navigation.navigate) {
+                            navigation.navigate('products');
+                          }
+                        }}
+                        activeOpacity={0.85}
+                      >
+                        <LinearGradient
+                          colors={['#ffffff', '#f5f5f5']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={styles.ctaGradient}
+                        >
+                          <MaterialCommunityIcons name="arrow-right-circle" size={20} color={COLORS.primary} />
+                          <Text style={styles.ctaButtonText}>Explore Now</Text>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </View>
+  
+              {/* Featured Products Section */}
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Featured Products</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    // Navigate to Products tab
+                    if (navigation && navigation.navigate) {
+                      navigation.navigate('products');
+                    }
+                  }}
+                >
+                  <Text style={styles.seeAll}>See All →</Text>
+                </TouchableOpacity>
+              </View>
+  
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.featuredScroll}
+                scrollEventThrottle={16}
+              >
+                {products.slice(0, 6).map((item, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => setSelectedProduct(item)}
+                  >
+                    {renderFeaturedCard(item, idx)}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+  
+              {/* Categories */}
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Categories</Text>
+              </View>
+  
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoriesScroll}
+                scrollEventThrottle={16}
+              >
+                <TouchableOpacity
+                  onPress={() => setSelectedCategory('all')}
+                  style={[
+                    styles.categoryButton,
+                    selectedCategory === 'all' && styles.categoryButtonActive,
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.categoryIconBox,
+                      { backgroundColor: COLORS.primary + '20' },
+                      selectedCategory === 'all' && {
+                        backgroundColor: COLORS.primary + '40',
+                      },
+                    ]}
+                  >
+                    <MaterialCommunityIcons name="grid" size={24} color={COLORS.primary} />
+                  </View>
+                  <Text
+                    style={[
+                      styles.categoryButtonText,
+                      selectedCategory === 'all' && styles.categoryButtonTextActive,
+                    ]}
+                  >
+                    All
+                  </Text>
+                </TouchableOpacity>
+                {categories.map(renderCategoryButton)}
+              </ScrollView>
+  
+              {/* Products List */}
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {selectedCategory === 'all' ? 'All Products' : 'Available Products'}
+                </Text>
+              </View>
+  
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={COLORS.primary} />
+                  <Text style={styles.loadingText}>Loading products...</Text>
+                </View>
+              ) : filteredProducts.length > 0 ? (
+                <FlatList
+                  data={filteredProducts}
+                  numColumns={2}
+                  columnWrapperStyle={styles.columnWrapper}
+                  renderItem={({ item }) => renderProductCard(item)}
+                  keyExtractor={(item) => item._id || item.id || item.name}
+                  showsVerticalScrollIndicator={false}
+                  scrollEnabled={false}
+                  contentContainerStyle={styles.gridContent}
+                />
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <MaterialCommunityIcons name="inbox-multiple" size={64} color={COLORS.border} />
+                  <Text style={styles.emptyText}>No products found</Text>
+                  <Text style={styles.emptySubtext}>Try a different search or category</Text>
+                </View>
+              )}
+            </ScrollView>
+          </LinearGradient>
+        </View>
+      )}
+    </>
   );
 };
 
