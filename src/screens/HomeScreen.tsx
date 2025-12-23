@@ -276,6 +276,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
             {/* Header */}
             <View style={styles.header}>
+              <View>
+                <Text style={styles.greeting}>Welcome Back!</Text>
+                <Text style={styles.location}>RitzYard</Text>
+              </View>
+              
               <TouchableOpacity
                 style={styles.cartButton}
                 onPress={() => {
