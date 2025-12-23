@@ -190,34 +190,41 @@ const RFQScreen: React.FC<RFQScreenProps> = ({ visible, product, onClose, onAddT
       );
 
       if (response.ok) {
-        // Send WhatsApp message to admin
-        const whatsappMessage = `I need quotation for below materials:
+        // Send WhatsApp message to admin with comprehensive RFQ details
+        const whatsappMessage = `🔧 *REQUEST FOR QUOTATION (RFQ)*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-MATERIAL REQUIREMENTS
-Total Items: 1
+📦 *MATERIAL REQUIREMENTS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Product: *${rfqData.productName}*
+Category: ${rfqData.category?.replace('-', ' ').toUpperCase()}
+Brand/Make: ${rfqData.brand}
+Grade/Type: ${rfqData.grade}
+Quantity: *${rfqData.quantity} MT*
 
-Item 1
-Product: ${rfqData.productName}
-Category: ${rfqData.category}
-Brand: ${rfqData.brand}
-Material/Grade: ${rfqData.grade}
-Quantity: ${rfqData.quantity} MT
-
-CUSTOMER DETAILS
+👤 *CUSTOMER DETAILS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Name: ${rfqData.customerName}
 Company: ${rfqData.companyName}
-Delivery Location: ${rfqData.deliveryLocation}
 Email: ${rfqData.email}
-Phone: ${rfqData.phone}`;
+Phone: ${rfqData.phone}
+Delivery Location: ${rfqData.deliveryLocation}
+
+📋 *SUBMISSION DETAILS*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Submitted: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+Source: RitzYard Mobile App
+
+✅ Please confirm quotation details and expected timeline`;
         
         const whatsappUrl = `https://wa.me/919136242706?text=${encodeURIComponent(whatsappMessage)}`;
         
         Alert.alert(
-          'Success!',
-          'Your RFQ has been submitted successfully!\n\nWe will contact you at +91 91362 42706 with a quotation.',
+          '✅ RFQ Submitted Successfully!',
+          'Your quotation request has been received.\n\nShare details on WhatsApp to our team for faster response.',
           [
             {
-              text: 'Share on WhatsApp',
+              text: '📱 Share on WhatsApp',
               onPress: () => {
                 // Open WhatsApp
                 window.open(whatsappUrl, '_blank');
@@ -228,7 +235,7 @@ Phone: ${rfqData.phone}`;
               },
             },
             {
-              text: 'OK',
+              text: 'Done',
               onPress: () => {
                 // Call the onAddToCart callback
                 onAddToCart(rfqData);
