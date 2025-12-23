@@ -19,7 +19,6 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getProducts } from '../lib/api';
 import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
-import BottomDrawer from '../components/BottomDrawer';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -71,7 +70,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartCount, setCartCount] = useState(0);
-  const [drawerVisible, setDrawerVisible] = useState(false);
 
   const categories: Category[] = [
     { id: '1', name: 'Mild Steel', icon: 'hammer', color: '#c15738', value: 'mild-steel' },
@@ -279,18 +277,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => setDrawerVisible(true)}
-          >
-            <MaterialCommunityIcons name="menu" size={28} color={COLORS.primary} />
-          </TouchableOpacity>
-          
-          <View>
-            <Text style={styles.greeting}>Welcome Back!</Text>
-            <Text style={styles.location}>RitzYard</Text>
-          </View>
-          
-          <TouchableOpacity 
             style={styles.cartButton}
             onPress={() => {
               // Navigate to RFQ (cart) with empty state ready
@@ -500,15 +486,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         </ScrollView>
       </LinearGradient>
     </View>
-      )}
-      
-      {/* Bottom Drawer */}
-      <BottomDrawer
-        visible={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
-        navigation={navigation}
-      />
-    </>
   );
 };
 
