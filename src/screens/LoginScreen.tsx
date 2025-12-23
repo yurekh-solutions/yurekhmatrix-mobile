@@ -261,15 +261,6 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
         style={styles.gradient}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Decorative Image */}
-          <View style={styles.imageSection}>
-            <View style={styles.imagePlaceholder}>
-              <View style={styles.iconGradientBg}>
-                <MaterialCommunityIcons name="package-variant" size={120} color={COLORS.white} />
-              </View>
-            </View>
-          </View>
-
           {/* Logo Section */}
           <View style={styles.logoSection}>
             <View style={styles.logoBadge}>
@@ -411,42 +402,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,
-    paddingTop: 10,
+    paddingTop: 30,
   },
 
-  // Image Section
-  imageSection: {
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 20,
-  },
-
-  imagePlaceholder: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-
-  iconGradientBg: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary,
-  },
+  // Image Section - REMOVED
+  // imageSection: { ... },
+  // imagePlaceholder: { ... },
+  // iconGradientBg: { ... },
 
   // Header
   header: {
@@ -458,7 +420,7 @@ const styles = StyleSheet.create({
   // Logo Section
   logoSection: {
     alignItems: 'center',
-    marginVertical: 24,
+    marginVertical: 40,
     paddingHorizontal: 20,
   },
 
