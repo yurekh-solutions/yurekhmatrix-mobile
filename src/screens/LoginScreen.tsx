@@ -22,7 +22,7 @@ const { width, height } = Dimensions.get('window');
 
 // Design System Colors (Premium Materials Marketplace - Linear Gradient Theme)
 const COLORS = {
-  primary: '#c15738', // Terracotta (for accents only)
+  primary: '#c15738', // Terracotta
   primaryLight: '#d66f4f',
   primaryDark: '#8b3a25',
   secondary: '#f5ede3', // Warm cream
@@ -33,6 +33,8 @@ const COLORS = {
   border: '#e8dfd5',
   success: '#4caf50',
   error: '#f44336',
+  gradientStart: '#e8d5c4', // Light terracotta
+  gradientEnd: '#f5ede3',   // Cream
 };
 
 export default function LoginScreen({ navigation, onLoginSuccess }: any) {
@@ -106,7 +108,12 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
   if (isSignup) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
+        <LinearGradient 
+          colors={[COLORS.gradientStart, COLORS.gradientEnd, COLORS.background]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradient}
+        >
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
             {/* Header */}
             <View style={styles.header}>
@@ -118,10 +125,17 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
             {/* Logo & Title */}
             <View style={styles.logoSection}>
               <View style={styles.logoBadge}>
-                <Text style={styles.logoText}>RY</Text>
+                <LinearGradient
+                  colors={[COLORS.primaryLight, COLORS.primary]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.badgeGradient}
+                >
+                  <Text style={styles.logoText}>RY</Text>
+                </LinearGradient>
               </View>
               <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Join RitzYard today</Text>
+              <Text style={styles.subtitle}>Join RitzYard - Premium Materials Marketplace</Text>
             </View>
 
             {/* Form Card */}
@@ -240,19 +254,33 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
+      <LinearGradient 
+        colors={[COLORS.gradientStart, COLORS.gradientEnd, COLORS.background]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradient}
+      >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Decorative Image */}
           <View style={styles.imageSection}>
             <View style={styles.imagePlaceholder}>
-              <MaterialCommunityIcons name="package-variant" size={120} color={COLORS.primary} />
+              <View style={styles.iconGradientBg}>
+                <MaterialCommunityIcons name="package-variant" size={120} color={COLORS.white} />
+              </View>
             </View>
           </View>
 
           {/* Logo Section */}
           <View style={styles.logoSection}>
             <View style={styles.logoBadge}>
-              <Text style={styles.logoText}>RY</Text>
+              <LinearGradient
+                colors={[COLORS.primaryLight, COLORS.primary]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.badgeGradient}
+              >
+                <Text style={styles.logoText}>RY</Text>
+              </LinearGradient>
             </View>
             <Text style={styles.title}>RitzYard</Text>
             <Text style={styles.subtitle}>Premium Materials Marketplace</Text>
@@ -373,7 +401,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.gradientStart,
   },
 
   gradient: {
@@ -383,6 +411,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,
+    paddingTop: 10,
   },
 
   // Image Section
@@ -390,15 +419,15 @@ const styles = StyleSheet.create({
     height: 200,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 30,
+    marginBottom: 20,
   },
 
   imagePlaceholder: {
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: COLORS.secondary,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: COLORS.primary,
@@ -406,18 +435,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 16,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+
+  iconGradientBg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
   },
 
   // Header
   header: {
     paddingHorizontal: 20,
     paddingVertical: 16,
+    marginBottom: 10,
   },
 
   // Logo Section
   logoSection: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 24,
     paddingHorizontal: 20,
   },
 
@@ -425,62 +466,71 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginBottom: 16,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 16,
     elevation: 8,
+    overflow: 'hidden',
+  },
+
+  badgeGradient: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   logoText: {
-    fontSize: 32,
-    fontWeight: '800',
+    fontSize: 36,
+    fontWeight: '900',
     color: COLORS.white,
-    letterSpacing: 1,
+    letterSpacing: 2,
   },
 
   title: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 32,
+    fontWeight: '900',
     color: COLORS.text,
     marginBottom: 6,
+    letterSpacing: 0.5,
   },
 
   subtitle: {
     fontSize: 14,
     color: COLORS.textLight,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 
-  // Form Card
+  // Form Card - Glass Morphism Style
   formCard: {
     marginHorizontal: 20,
+    marginVertical: 16,
     padding: 24,
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 8,
     gap: 18,
   },
 
   // Input Group
   inputGroup: {
-    gap: 8,
+    gap: 10,
   },
 
   label: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
     color: COLORS.text,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
 
   inputWrapper: {
@@ -488,10 +538,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    backgroundColor: 'rgba(245, 237, 227, 0.7)',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(193, 87, 56, 0.3)',
     gap: 10,
   },
 
@@ -499,35 +549,45 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 
   // Buttons
   loginButton: {
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: 'hidden',
     marginTop: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
 
   signupButton: {
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: 'hidden',
     marginTop: 16,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
 
   buttonContent: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 14,
-    gap: 10,
+    paddingVertical: 16,
+    gap: 12,
   },
 
   buttonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
     color: COLORS.white,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
 
   // Footer
@@ -536,24 +596,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 12,
+    flexWrap: 'wrap',
   },
 
   rememberRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    marginRight: 'auto',
   },
 
   rememberText: {
     fontSize: 13,
-    color: COLORS.textLight,
+    color: COLORS.text,
     fontWeight: '500',
   },
 
   forgotText: {
     fontSize: 13,
     color: COLORS.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 
   // Divider
@@ -561,19 +623,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginVertical: 8,
+    marginVertical: 12,
   },
 
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: COLORS.border,
+    backgroundColor: 'rgba(193, 87, 56, 0.2)',
   },
 
   dividerText: {
     fontSize: 12,
     color: COLORS.textLight,
     fontWeight: '500',
+    marginHorizontal: 4,
   },
 
   // Social
@@ -581,16 +644,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 16,
-    marginVertical: 4,
+    marginVertical: 8,
   },
 
   socialButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    backgroundColor: COLORS.secondary,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(193, 87, 56, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -599,17 +662,127 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
-  },
+    marginTop: 12,
+    flexWrap: 'wrap',
+  }
 
   footerText: {
     fontSize: 13,
-    color: COLORS.textLight,
+    color: COLORS.text,
+    fontWeight: '500',
   },
 
   footerLink: {
     fontSize: 13,
     color: COLORS.primary,
+    fontWeight: '800',
+    textDecorationLine: 'underline',
+  },
+
+  successPopupOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+
+  successPopupCard: {
+    marginHorizontal: 20,
+    padding: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    borderRadius: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+
+  successIconContainer: {
+    marginBottom: 16,
+  },
+
+  successPopupTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 6,
+  },
+
+  successPopupSubtitle: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    marginBottom: 16,
+    fontWeight: '600',
+  },
+
+  successPopupDetails: {
+    width: '100%',
+    backgroundColor: COLORS.secondary,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+
+  detailLabel: {
+    fontSize: 12,
     fontWeight: '700',
+    color: COLORS.textLight,
+  },
+
+  detailValue: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+
+  successPopupButtons: {
+    width: '100%',
+    gap: 12,
+  },
+
+  popupButtonSecondary: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: COLORS.secondary,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+  },
+
+  popupButtonSecondaryText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+
+  popupButtonPrimary: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  popupButtonPrimaryText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.white,
   },
 });

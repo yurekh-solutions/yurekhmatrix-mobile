@@ -16,6 +16,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CartService from '../lib/cartService';
+import { useAuth } from '../contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -61,6 +62,7 @@ interface ProductDetailsScreenProps {
 }
 
 const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({ product, onBack, navigation }) => {
+  const { isAuthenticated } = useAuth();
   const [selectedBrand, setSelectedBrand] = React.useState<string | null>(null);
   const [selectedGrade, setSelectedGrade] = React.useState<string | null>(null);
   const [quantity, setQuantity] = React.useState('1');
@@ -98,6 +100,30 @@ Available on RitzYard - Smart Material Procurement Platform`;
   };
 
   const handleAddToCart = async () => {
+    // Check authentication first
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Login Required',
+        'Please log in to add items to your cart.',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {},
+            style: 'cancel',
+          },
+          {
+            text: 'Go to Login',
+            onPress: () => {
+              if (navigation && navigation.navigate) {
+                navigation.navigate('auth');
+              }
+            },
+          },
+        ]
+      );
+      return;
+    }
+
     if (!selectedBrand) {
       Alert.alert('Required', 'Please select a brand');
       return;

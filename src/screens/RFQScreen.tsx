@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAuth } from '../contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -69,6 +70,7 @@ export interface RFQData {
 }
 
 const RFQScreen: React.FC<RFQScreenProps> = ({ visible, product, onClose, onAddToCart }) => {
+  const { isAuthenticated, user } = useAuth();
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
@@ -115,6 +117,28 @@ const RFQScreen: React.FC<RFQScreenProps> = ({ visible, product, onClose, onAddT
   };
 
   const handleSubmitRFQ = async () => {
+    // Check authentication
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Login Required',
+        'Please log in to submit RFQ requests.',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {},
+            style: 'cancel',
+          },
+          {
+            text: 'Go to Login',
+            onPress: () => {
+              onClose();
+            },
+          },
+        ]
+      );
+      return;
+    }
+
     if (!customerName.trim()) {
       Alert.alert('Required', 'Please enter your name');
       return;
