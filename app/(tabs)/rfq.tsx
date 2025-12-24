@@ -163,30 +163,38 @@ export default function RFQTab() {
         console.log('Backend unavailable - continuing with WhatsApp submission', backendError?.message);
       }
 
-      // Build WhatsApp message with all details
-      let whatsappMessage = `*🎯 New RFQ Submission*\n\n`;
-      whatsappMessage += `*👤 CUSTOMER DETAILS*\n`;
-      whatsappMessage += `📛 Name: ${customerName}\n`;
-      whatsappMessage += `📧 Email: ${email}\n`;
-      whatsappMessage += `📱 Phone: ${phone}\n`;
-      whatsappMessage += `🏢 Company: ${companyName}\n`;
-      whatsappMessage += `📍 Delivery Location: ${deliveryLocation}\n\n`;
-      whatsappMessage += `*📦 MATERIAL REQUIREMENTS*\n`;
+      // Build WhatsApp message with all details - Material Requirements FIRST
+      let whatsappMessage = `*NEW RFQ SUBMISSION*\n\n`;
+      
+      whatsappMessage += `*MATERIAL REQUIREMENTS*\n`;
       whatsappMessage += `Total Items: ${cartItems.length}\n\n`;
       
       cartItems.forEach((item, index) => {
         whatsappMessage += `*Item ${index + 1}*\n`;
-        whatsappMessage += `   Product: ${item.productName}\n`;
-        whatsappMessage += `   Category: ${item.category}\n`;
-        whatsappMessage += `   Brand: ${item.brand}\n`;
-        whatsappMessage += `   Grade: ${item.grade}\n`;
-        whatsappMessage += `   Quantity: ${item.quantity} MT\n`;
+        whatsappMessage += `Product: ${item.productName}\n`;
+        whatsappMessage += `Category: ${item.category}\n`;
+        whatsappMessage += `Brand: ${item.brand}\n`;
+        whatsappMessage += `Grade: ${item.grade}\n`;
+        whatsappMessage += `Quantity: ${item.quantity} MT\n`;
         whatsappMessage += `\n`;
       });
+      
+      whatsappMessage += `*CUSTOMER DETAILS*\n`;
+      whatsappMessage += `Name: ${customerName}\n`;
+      whatsappMessage += `Email: ${email}\n`;
+      whatsappMessage += `Phone: ${phone}\n`;
+      whatsappMessage += `Company: ${companyName}\n`;
+      whatsappMessage += `Delivery Location: ${deliveryLocation}\n\n`;
 
       whatsappMessage += `_${backendSubmitted ? 'Also saved in system' : 'Offline submission'}_`;
 
       const whatsappUrl = `https://wa.me/919136242706?text=${encodeURIComponent(whatsappMessage)}`;
+
+      // Automatically open WhatsApp immediately
+      Linking.openURL(whatsappUrl).catch(err => {
+        console.log('WhatsApp not available:', err);
+        Alert.alert('WhatsApp Error', 'Could not open WhatsApp. Please install WhatsApp or manually message +919136242706');
+      });
 
       // Show success animation
       setShowSuccess(true);
@@ -196,28 +204,10 @@ export default function RFQTab() {
         
         Alert.alert(
           '✅ RFQ Submitted Successfully!',
-          'Your quotation request has been submitted.\n\nClick "Send via WhatsApp" to share details with our sales team.',
+          `Your quotation request has been submitted via WhatsApp to +919136242706.\n\nWe'll contact you soon at ${email} or ${phone}.`,
           [
             {
-              text: '💬 Send via WhatsApp',
-              onPress: () => {
-                Linking.openURL(whatsappUrl).catch(err => {
-                  console.log('WhatsApp not available:', err);
-                  Alert.alert('Info', 'Please manually message +919136242706 on WhatsApp');
-                });
-                // Reset form and clear cart
-                resetForm();
-                setTimeout(() => {
-                  navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'index' }],
-                  });
-                }, 500);
-              },
-              style: 'default',
-            },
-            {
-              text: 'Done',
+              text: 'OK',
               onPress: () => {
                 // Reset form and clear cart
                 resetForm();
@@ -228,7 +218,6 @@ export default function RFQTab() {
                   });
                 }, 500);
               },
-              style: 'cancel',
             },
           ]
         );
@@ -319,33 +308,49 @@ export default function RFQTab() {
                 </View>
               ) : (
                 <>
-                  {cartItems.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.cartItem}
-                      onPress={() => handleCartItemClick(index)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={styles.cartItemContent}>
-                        <View style={styles.cartItemIconBox}>
-                          <MaterialCommunityIcons name="package-variant-closed" size={28} color={COLORS.primary} />
-                        </View>
-                        <View style={styles.cartItemDetails}>
-                          <Text style={styles.cartItemName}>{item.productName}</Text>
-                          <Text style={styles.cartItemSpec}>Brand: {item.brand}</Text>
-                          <Text style={styles.cartItemSpec}>Grade: {item.grade}</Text>
-                          <Text style={styles.cartItemQuantity}>Qty: {item.quantity} MT</Text>
-                        </View>
-                      </View>
+                  {cartItems.map((item, index) => {
+                    // Prepare image source
+                    const imageSource = (typeof item.image === 'object' && item.image !== null)
+                      ? item.image
+                      : (typeof item.image === 'number')
+                        ? item.image
+                        : (item.image ? { uri: item.image } : null);
+
+                    return (
                       <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={() => handleDeleteItem(index)}
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        key={index}
+                        style={styles.cartItem}
+                        onPress={() => handleCartItemClick(index)}
+                        activeOpacity={0.7}
                       >
-                        <MaterialCommunityIcons name="trash-can-outline" size={20} color={COLORS.primary} />
+                        <View style={styles.cartItemContent}>
+                          {/* Product Image */}
+                          <View style={styles.cartItemImageContainer}>
+                            {imageSource ? (
+                              <Image source={imageSource} style={styles.cartItemImage} resizeMode="cover" />
+                            ) : (
+                              <View style={styles.cartItemImagePlaceholder}>
+                                <MaterialCommunityIcons name="package-variant-closed" size={28} color={COLORS.border} />
+                              </View>
+                            )}
+                          </View>
+                          <View style={styles.cartItemDetails}>
+                            <Text style={styles.cartItemName}>{item.productName}</Text>
+                            <Text style={styles.cartItemSpec}>Brand: {item.brand}</Text>
+                            <Text style={styles.cartItemSpec}>Grade: {item.grade}</Text>
+                            <Text style={styles.cartItemQuantity}>Qty: {item.quantity} MT</Text>
+                          </View>
+                        </View>
+                        <TouchableOpacity
+                          style={styles.deleteButton}
+                          onPress={() => handleDeleteItem(index)}
+                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        >
+                          <MaterialCommunityIcons name="trash-can-outline" size={20} color={COLORS.primary} />
+                        </TouchableOpacity>
                       </TouchableOpacity>
-                    </TouchableOpacity>
-                  ))}
+                    );
+                  })}
                   
                   <View style={styles.addMoreSection}>
                     <TouchableOpacity
@@ -365,25 +370,37 @@ export default function RFQTab() {
               )}
             </View>
           ) : (
-            // STEP 2 - Customer Information & Selected Item
+            // STEP 2 - Customer Information & All Cart Items Summary
             <View style={styles.formSection}>
-              {/* Show Selected Item Details */}
-              {selectedItemIndex !== null && cartItems[selectedItemIndex] && (
-                <View style={styles.selectedItemCard}>
-                  <Text style={styles.selectedItemTitle}>Selected Item</Text>
-                  <View style={styles.selectedItemContent}>
-                    <View style={styles.selectedItemIcon}>
-                      <MaterialCommunityIcons name="package-variant-closed" size={24} color={COLORS.primary} />
+              {/* Show All Cart Items Summary */}
+              <View style={styles.cartSummaryCard}>
+                <Text style={styles.cartSummaryTitle}>Cart Summary ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})</Text>
+                {cartItems.map((item, index) => {
+                  const imageSource = (typeof item.image === 'object' && item.image !== null)
+                    ? item.image
+                    : (typeof item.image === 'number')
+                      ? item.image
+                      : (item.image ? { uri: item.image } : null);
+
+                  return (
+                    <View key={index} style={styles.summaryItem}>
+                      <View style={styles.summaryItemImageBox}>
+                        {imageSource ? (
+                          <Image source={imageSource} style={styles.summaryItemImage} resizeMode="cover" />
+                        ) : (
+                          <View style={styles.summaryItemImagePlaceholder}>
+                            <MaterialCommunityIcons name="package-variant-closed" size={20} color={COLORS.border} />
+                          </View>
+                        )}
+                      </View>
+                      <View style={styles.summaryItemInfo}>
+                        <Text style={styles.summaryItemName}>{item.productName}</Text>
+                        <Text style={styles.summaryItemSpec}>{item.brand} • {item.grade} • {item.quantity} MT</Text>
+                      </View>
                     </View>
-                    <View style={styles.selectedItemInfo}>
-                      <Text style={styles.selectedItemName}>{cartItems[selectedItemIndex].productName}</Text>
-                      <Text style={styles.selectedItemSpec}>Brand: {cartItems[selectedItemIndex].brand}</Text>
-                      <Text style={styles.selectedItemSpec}>Grade: {cartItems[selectedItemIndex].grade}</Text>
-                      <Text style={styles.selectedItemQuantity}>Qty: {cartItems[selectedItemIndex].quantity} MT</Text>
-                    </View>
-                  </View>
-                </View>
-              )}
+                  );
+                })}
+              </View>
               
               <Text style={styles.sectionTitle}>Your Details</Text>
 
@@ -633,6 +650,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
+  cartItemImageContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    marginRight: 12,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(193, 87, 56, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(193, 87, 56, 0.15)',
+  },
+  cartItemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  cartItemImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(193, 87, 56, 0.05)',
+  },
   cartItemDetails: {
     flex: 1,
   },
@@ -671,6 +709,64 @@ const styles = StyleSheet.create({
   formSection: {
     marginBottom: 20,
   },
+  cartSummaryCard: {
+    backgroundColor: 'rgba(193, 87, 56, 0.08)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(193, 87, 56, 0.25)',
+  },
+  cartSummaryTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.primary,
+    marginBottom: 14,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  summaryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 8,
+  },
+  summaryItemImageBox: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+    marginRight: 12,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(193, 87, 56, 0.15)',
+  },
+  summaryItemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  summaryItemImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(193, 87, 56, 0.05)',
+  },
+  summaryItemInfo: {
+    flex: 1,
+  },
+  summaryItemName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  summaryItemSpec: {
+    fontSize: 12,
+    color: COLORS.textLight,
+  },
   selectedItemCard: {
     backgroundColor: 'rgba(193, 87, 56, 0.08)',
     borderRadius: 16,
@@ -699,6 +795,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+  },
+  selectedItemImageBox: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    marginRight: 12,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(193, 87, 56, 0.2)',
+  },
+  selectedItemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  selectedItemImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   selectedItemInfo: {
     flex: 1,

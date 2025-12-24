@@ -50,15 +50,15 @@ export default function TabLayout() {
           marginTop: 6,
           letterSpacing: 0.3,
         },
-      }}>
-      {/* Discover Tab */}
+      }}>      
+      {/* Home Tab */}
       <Tabs.Screen
-        name="explore"
+        name="index"
         options={{
-          title: 'Discover',
+          title: 'Home',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
-              <MaterialCommunityIcons name={focused ? 'compass' : 'compass-outline'} size={28} color={color} />
+              <MaterialCommunityIcons name={focused ? 'home' : 'home-outline'} size={28} color={color} />
             </View>
           ),
         }}

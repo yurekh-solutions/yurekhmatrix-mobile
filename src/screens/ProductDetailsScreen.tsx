@@ -146,6 +146,7 @@ Available on RitzYard - Smart Material Procurement Platform`;
         brand: selectedBrand,
         grade: selectedGrade,
         quantity: parseInt(quantity),
+        image: product.image,  // Include product image
       };
 
       // Add to cart storage

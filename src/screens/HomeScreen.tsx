@@ -248,9 +248,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               <MaterialCommunityIcons name="package-variant" size={48} color={COLORS.border} />
             </View>
           )}
-          <TouchableOpacity style={styles.favoriteButton}>
-            <MaterialCommunityIcons name="heart-outline" size={20} color={COLORS.white} />
-          </TouchableOpacity>
         </View>
         <View style={styles.productInfo}>
           <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
@@ -1022,18 +1019,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.secondary,
-  },
-
-  favoriteButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.primary + '99',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 
   productInfo: {

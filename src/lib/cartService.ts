@@ -9,6 +9,7 @@ export interface CartItem {
   brand: string;
   grade: string;
   quantity: number;
+  image?: string | number | { uri: string } | any;  // Added product image
   customerName?: string;
   companyName?: string;
   deliveryLocation?: string;
