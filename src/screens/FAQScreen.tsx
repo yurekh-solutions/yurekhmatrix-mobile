@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/src/styles/colors';
@@ -17,79 +18,52 @@ interface FAQItem {
   category: string;
 }
 
-const faqItems: FAQItem[] = [
-  {
-    id: '1',
-    category: 'RFQ',
-    question: 'How do I create an RFQ?',
-    answer: 'Go to the RFQ section, add items with details, fill supplier information, and submit. Suppliers will respond within 24 hours.',
-  },
-  {
-    id: '2',
-    category: 'RFQ',
-    question: 'Can I modify my RFQ after submission?',
-    answer: 'You can modify open RFQs. Once suppliers respond with quotes, modifications may affect their responses.',
-  },
-  {
-    id: '3',
-    category: 'RFQ',
-    question: 'How long are RFQs valid?',
-    answer: 'RFQs remain active for 30 days by default. You can extend or close them anytime.',
-  },
-  {
-    id: '4',
-    category: 'Products',
-    question: 'How can I search for specific products?',
-    answer: 'Use the search bar with product name, category, or specifications. You can also filter by price range and supplier.',
-  },
-  {
-    id: '5',
-    category: 'Products',
-    question: 'Are product prices negotiable?',
-    answer: 'Yes, submit an RFQ to get competitive quotes. Most suppliers offer volume discounts for bulk orders.',
-  },
-  {
-    id: '6',
-    category: 'Suppliers',
-    question: 'How are suppliers verified?',
-    answer: 'All suppliers undergo KYC verification, GST validation, and quality checks before joining our platform.',
-  },
-  {
-    id: '7',
-    category: 'Suppliers',
-    question: 'Can I chat with suppliers directly?',
-    answer: 'Yes, you can message suppliers through the chat feature within the RFQ or product details page.',
-  },
-  {
-    id: '8',
-    category: 'Payment',
-    question: 'What payment methods are available?',
-    answer: 'We support bank transfers, credit/debit cards, and UPI. Payments are secured through our platform.',
-  },
-  {
-    id: '9',
-    category: 'Delivery',
-    question: 'How long does delivery take?',
-    answer: 'Delivery time depends on supplier and location, typically 7-14 days. Express options available.',
-  },
-  {
-    id: '10',
-    category: 'Account',
-    question: 'How do I reset my password?',
-    answer: 'Click on Forgot Password on login, enter your email, and follow the verification link sent to your inbox.',
-  },
-];
-
 export default function FAQScreen() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const categories = ['All', ...new Set(faqItems.map((item) => item.category))];
+  useEffect(() => {
+    const fetchFAQs = async () => {
+      try {
+        // TODO: Fetch from backend API
+        // For now, using fallback data
+        const defaultFAQs: FAQItem[] = [
+          { id: '1', category: 'RFQ', question: 'How do I create an RFQ?', answer: 'Go to the RFQ section, add items with details, fill supplier information, and submit. Suppliers will respond within 24 hours.' },
+          { id: '2', category: 'RFQ', question: 'Can I modify my RFQ after submission?', answer: 'You can modify open RFQs. Once suppliers respond with quotes, modifications may affect their responses.' },
+          { id: '3', category: 'RFQ', question: 'How long are RFQs valid?', answer: 'RFQs remain active for 30 days by default. You can extend or close them anytime.' },
+          { id: '4', category: 'Products', question: 'How can I search for specific products?', answer: 'Use the search bar with product name, category, or specifications. You can also filter by price range and supplier.' },
+          { id: '5', category: 'Products', question: 'Are product prices negotiable?', answer: 'Yes, submit an RFQ to get competitive quotes. Most suppliers offer volume discounts for bulk orders.' },
+          { id: '6', category: 'Suppliers', question: 'How are suppliers verified?', answer: 'All suppliers undergo KYC verification, GST validation, and quality checks before joining our platform.' },
+          { id: '7', category: 'Suppliers', question: 'Can I chat with suppliers directly?', answer: 'Yes, you can message suppliers through the chat feature within the RFQ or product details page.' },
+          { id: '8', category: 'Payment', question: 'What payment methods are available?', answer: 'We support bank transfers, credit/debit cards, and UPI. Payments are secured through our platform.' },
+          { id: '9', category: 'Delivery', question: 'How long does delivery take?', answer: 'Delivery time depends on supplier and location, typically 7-14 days. Express options available.' },
+          { id: '10', category: 'Account', question: 'How do I reset my password?', answer: 'Click on Forgot Password on login, enter your email, and follow the verification link sent to your inbox.' },
+        ];
+        setFaqItems(defaultFAQs);
+      } catch (error) {
+        console.error('Error fetching FAQs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredItems =
-    selectedCategory === 'All'
-      ? faqItems
-      : faqItems.filter((item) => item.category === selectedCategory);
+    fetchFAQs();
+  }, []);
+
+  const categories: string[] = ['All', ...new Set(faqItems.map((item: FAQItem) => item.category))];
+  const filteredItems = selectedCategory === 'All' ? faqItems : faqItems.filter((item: FAQItem) => item.category === selectedCategory);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const FAQItem = ({ item }: { item: FAQItem }) => {
     const isExpanded = expandedId === item.id;
@@ -124,7 +98,7 @@ export default function FAQScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Frequently Asked Questions</Text>
+          <Text style={styles.title}>FAQ</Text>
           <Text style={styles.subtitle}>Find answers to common questions</Text>
         </View>
 
@@ -195,9 +169,10 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: 20,
+    paddingTop: 60,
     paddingBottom: 12,
+    marginBottom: 4,
   },
   title: {
     fontSize: 28,
@@ -210,7 +185,7 @@ const styles = StyleSheet.create({
     color: colors.textLight,
   },
   categoriesScroll: {
-    marginVertical: 12,
+    marginVertical: 8,
     paddingLeft: 16,
   },
   categoriesList: {
@@ -239,7 +214,7 @@ const styles = StyleSheet.create({
   },
   resultsInfo: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   resultsText: {
     fontSize: 12,
@@ -248,7 +223,7 @@ const styles = StyleSheet.create({
   },
   faqList: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 6,
     gap: 8,
   },
   faqItem: {
@@ -287,10 +262,10 @@ const styles = StyleSheet.create({
   },
   supportSection: {
     marginHorizontal: 16,
-    marginVertical: 12,
+    marginVertical: 8,
     backgroundColor: colors.accent,
     borderRadius: 10,
-    paddingVertical: 20,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     alignItems: 'center',
     borderWidth: 1,

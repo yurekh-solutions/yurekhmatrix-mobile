@@ -175,31 +175,39 @@ Available on RitzYard - Smart Material Procurement Platform`;
   return (
     <View style={styles.container}>
       <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
-        {/* Success Popup - Glass Morphism */}
+              {/* Success Popup - Glass Morphism */}
         {showSuccessPopup && (
           <View style={styles.successPopupOverlay}>
             <View style={styles.successPopupCard}>
-              {/* Success Icon */}
-              <View style={styles.successIconContainer}>
-                <MaterialCommunityIcons name="check-circle" size={64} color={COLORS.primary} />
-              </View>
+              {/* Success Icon Container */}
+              <LinearGradient
+                colors={['rgba(193, 87, 56, 0.1)', 'rgba(193, 87, 56, 0.05)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.successIconGradient}
+              >
+                <MaterialCommunityIcons name="check-circle" size={72} color={COLORS.primary} />
+              </LinearGradient>
               
               {/* Success Message */}
-              <Text style={styles.successPopupTitle}>✅ Added to Cart!</Text>
+              <Text style={styles.successPopupTitle}>Successfully Added</Text>
               <Text style={styles.successPopupSubtitle}>{product.name}</Text>
               
               {/* Product Details */}
               <View style={styles.successPopupDetails}>
                 <View style={styles.detailRow}>
+                  <MaterialCommunityIcons name="factory" size={16} color={COLORS.primary} />
                   <Text style={styles.detailLabel}>Brand:</Text>
                   <Text style={styles.detailValue}>{selectedBrand}</Text>
                 </View>
                 <View style={styles.detailRow}>
+                  <MaterialCommunityIcons name="layers" size={16} color={COLORS.primary} />
                   <Text style={styles.detailLabel}>Grade:</Text>
                   <Text style={styles.detailValue}>{selectedGrade}</Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Qty:</Text>
+                  <MaterialCommunityIcons name="weight-kilogram" size={16} color={COLORS.primary} />
+                  <Text style={styles.detailLabel}>Quantity:</Text>
                   <Text style={styles.detailValue}>{quantity} MT</Text>
                 </View>
               </View>
@@ -212,28 +220,35 @@ Available on RitzYard - Smart Material Procurement Platform`;
                     setShowSuccessPopup(false);
                   }}
                 >
-                  <Text style={styles.popupButtonSecondaryText}>Continue Shopping</Text>
+                  <Text style={styles.popupButtonSecondaryText}>Continue Browsing</Text>
                 </TouchableOpacity>
                 
-                <TouchableOpacity 
-                  style={styles.popupButtonPrimary}
-                  onPress={() => {
-                    setShowSuccessPopup(false);
-                    if (navigation && navigation.navigate) {
-                      navigation.navigate('rfq', {
-                        product: {
-                          ...product,
-                          selectedBrand,
-                          selectedGrade,
-                          quantity: parseInt(quantity),
-                        },
-                      });
-                    }
-                  }}
+                <LinearGradient
+                  colors={['rgba(193, 87, 56, 0.95)', 'rgba(139, 58, 37, 0.95)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.popupButtonPrimaryGradient}
                 >
-                  <MaterialCommunityIcons name="arrow-right" size={18} color={COLORS.white} />
-                  <Text style={styles.popupButtonPrimaryText}>Go to RFQ</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.popupButtonPrimary}
+                    onPress={() => {
+                      setShowSuccessPopup(false);
+                      if (navigation && navigation.navigate) {
+                        navigation.navigate('rfq', {
+                          product: {
+                            ...product,
+                            selectedBrand,
+                            selectedGrade,
+                            quantity: parseInt(quantity),
+                          },
+                        });
+                      }
+                    }}
+                  >
+                    <MaterialCommunityIcons name="file-document-edit" size={20} color={COLORS.white} />
+                    <Text style={styles.popupButtonPrimaryText}>Create RFQ</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
               </View>
             </View>
           </View>
@@ -570,8 +585,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingTop: 60,
+    paddingBottom: 16,
+    marginBottom: 8,
   },
 
   backButton: {
@@ -842,32 +858,6 @@ const styles = StyleSheet.create({
     fontFamily: 'sans-serif',
   },
 
-  productIdContainer: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(193, 87, 56, 0.08)',
-    borderRadius: 8,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.2)',
-  },
-
-  productIdLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.primary,
-    marginBottom: 4,
-    letterSpacing: 0.5,
-    fontFamily: 'sans-serif',
-  },
-
-  productIdValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.text,
-    fontFamily: 'sans-serif',
-  },
-
   requestQuoteSection: {
     marginTop: 32,
     paddingHorizontal: 0,
@@ -1044,132 +1034,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
   },
 
-  successPopupOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    zIndex: 1000,
-  },
-
-  successPopupCard: {
-    width: '85%',
-    paddingVertical: 32,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(10px)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 20,
-    alignItems: 'center',
-  },
-
-  successIconContainer: {
-    marginBottom: 20,
-  },
-
-  successPopupTitle: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: COLORS.primary,
-    marginBottom: 8,
-    fontFamily: 'sans-serif',
-  },
-
-  successPopupSubtitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 20,
-    textAlign: 'center',
-    fontFamily: 'sans-serif',
-  },
-
-  successPopupDetails: {
-    width: '100%',
-    backgroundColor: 'rgba(193, 87, 56, 0.08)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-  },
-
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(193, 87, 56, 0.1)',
-  },
-
-  detailLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.textLight,
-    fontFamily: 'sans-serif',
-  },
-
-  detailValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primary,
-    fontFamily: 'sans-serif',
-  },
-
-  successPopupButtons: {
-    width: '100%',
-    gap: 12,
-  },
-
-  popupButtonSecondary: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    backgroundColor: 'rgba(193, 87, 56, 0.1)',
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    alignItems: 'center',
-  },
-
-  popupButtonSecondaryText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primary,
-    fontFamily: 'sans-serif',
-  },
-
-  popupButtonPrimary: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-
-  popupButtonPrimaryText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.white,
-    fontFamily: 'sans-serif',
-  },
-
   addToCartText: {
     fontSize: 16,
     fontWeight: '800',
@@ -1185,32 +1049,39 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 1000,
   },
 
   successPopupCard: {
-    width: '82%',
-    paddingVertical: 32,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    width: '88%',
+    paddingVertical: 40,
+    paddingHorizontal: 28,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.97)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 25,
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 28,
     alignItems: 'center',
   },
 
-  successIconContainer: {
-    marginBottom: 20,
+  successIconGradient: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: 'rgba(193, 87, 56, 0.2)',
   },
 
   successPopupTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
     color: COLORS.primary,
     marginBottom: 8,
@@ -1218,27 +1089,29 @@ const styles = StyleSheet.create({
   },
 
   successPopupSubtitle: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: COLORS.text,
-    marginBottom: 20,
+    marginBottom: 24,
     textAlign: 'center',
     fontFamily: 'sans-serif',
   },
 
   successPopupDetails: {
     width: '100%',
-    backgroundColor: 'rgba(193, 87, 56, 0.08)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    backgroundColor: 'rgba(193, 87, 56, 0.06)',
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(193, 87, 56, 0.12)',
   },
 
   detailRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    gap: 12,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(193, 87, 56, 0.1)',
   },
@@ -1248,10 +1121,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.textLight,
     fontFamily: 'sans-serif',
+    minWidth: 70,
   },
 
   detailValue: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: COLORS.primary,
     fontFamily: 'sans-serif',
@@ -1259,44 +1133,44 @@ const styles = StyleSheet.create({
 
   successPopupButtons: {
     width: '100%',
-    gap: 12,
+    gap: 14,
   },
 
   popupButtonSecondary: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 12,
     backgroundColor: 'rgba(193, 87, 56, 0.08)',
     borderWidth: 1.5,
     borderColor: COLORS.primary,
     alignItems: 'center',
+    justifyContent: 'center',
   },
 
   popupButtonSecondaryText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: COLORS.primary,
     fontFamily: 'sans-serif',
   },
 
+  popupButtonPrimaryGradient: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+
   popupButtonPrimary: {
     flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    gap: 10,
   },
 
   popupButtonPrimaryText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: COLORS.white,
     fontFamily: 'sans-serif',

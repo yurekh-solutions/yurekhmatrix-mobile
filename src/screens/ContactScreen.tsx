@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,9 +16,7 @@ import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/src/styles/colors';
 
-// WhatsApp contact number
 const WHATSAPP_NUMBER = '919136242706';
-
 const { width } = Dimensions.get('window');
 
 interface ContactInfo {
@@ -27,31 +25,6 @@ interface ContactInfo {
   value: string;
   action?: string;
 }
-
-const contactDetails: ContactInfo[] = [
-  {
-    icon: 'phone',
-    label: 'Phone',
-    value: '+1 (555) 123-4567',
-    action: 'tel:+15551234567',
-  },
-  {
-    icon: 'email',
-    label: 'Email',
-    value: 'support@ritzyard.com',
-    action: 'mailto:support@ritzyard.com',
-  },
-  {
-    icon: 'map-marker',
-    label: 'Address',
-    value: '123 Industry Lane, Business Park, USA',
-  },
-  {
-    icon: 'clock-outline',
-    label: 'Business Hours',
-    value: 'Mon-Fri: 9:00 AM - 6:00 PM EST',
-  },
-];
 
 export default function ContactScreen({ navigation }: any) {
   const [formData, setFormData] = useState({
@@ -62,7 +35,31 @@ export default function ContactScreen({ navigation }: any) {
     message: '',
   });
 
-  const [loading, setLoading] = useState(false);
+  const [contactDetails, setContactDetails] = useState<ContactInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchContactData();
+  }, []);
+
+  const fetchContactData = async () => {
+    try {
+      // TODO: Fetch from backend API
+      // For now, using fallback data
+      const defaultContacts: ContactInfo[] = [
+        { icon: 'phone', label: 'Phone', value: '+1 (555) 123-4567', action: 'tel:+15551234567' },
+        { icon: 'email', label: 'Email', value: 'support@ritzyard.com', action: 'mailto:support@ritzyard.com' },
+        { icon: 'map-marker', label: 'Address', value: '123 Industry Lane, Business Park, USA' },
+        { icon: 'clock-outline', label: 'Business Hours', value: 'Mon-Fri: 9:00 AM - 6:00 PM EST' },
+      ];
+      setContactDetails(defaultContacts);
+    } catch (error) {
+      console.error('Error fetching contact data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleContactAction = (action?: string) => {
     if (action) {
@@ -95,9 +92,9 @@ export default function ContactScreen({ navigation }: any) {
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    setLoading(true);
+    setSubmitting(true);
     try {
-      // Simulate API call
+      // TODO: Send to backend API
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       Alert.alert(
@@ -105,16 +102,8 @@ export default function ContactScreen({ navigation }: any) {
         'Your message has been sent! We will get back to you within 24 hours.'
       );
 
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-      });
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
 
-      // Offer WhatsApp option
       const whatsappMessage = `Hi, I just sent a contact message:
 
 Subject: ${formData.subject}
@@ -136,7 +125,7 @@ Please get back to me.`;
     } catch (error) {
       Alert.alert('Error', 'Failed to send message. Please try again.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -159,25 +148,23 @@ Please get back to me.`;
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header with Back Button */}
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation?.goBack?.()} style={styles.backBtn}>
-              <LinearGradient
-                colors={[colors.primary, colors.gradient2 || '#a84a2f']}
-                style={styles.backBtnGradient}
-              >
-                <Ionicons name="chevron-back" size={22} color="#fff" />
-              </LinearGradient>
-            </TouchableOpacity>
-            <View style={styles.headerTextContainer}>
-              <Text style={styles.title}>Contact Us</Text>
-              <Text style={styles.subtitle}>Get in touch with our support team</Text>
-            </View>
-          </View>
+          <Text style={styles.title}>Contact Us</Text>
+          <Text style={styles.subtitle}>Get in touch with our support team</Text>
           
           {/* Quick WhatsApp Contact */}
           <TouchableOpacity 
@@ -267,30 +254,19 @@ Please get back to me.`;
             textAlignVertical="top"
           />
 
-          <TouchableOpacity
-            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+          <TouchableOpacity 
+            style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
             onPress={handleSubmit}
-            disabled={loading}
+            disabled={submitting}
           >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
+            {submitting ? (
+              <ActivityIndicator color="#fff" size="small" />
             ) : (
               <>
                 <MaterialCommunityIcons name="send" size={18} color="#fff" />
                 <Text style={styles.submitButtonText}>Send Message</Text>
               </>
             )}
-          </TouchableOpacity>
-        </View>
-
-        {/* FAQ Quick Link */}
-        <View style={styles.faqSection}>
-          <MaterialCommunityIcons name="help-circle-outline" size={24} color={colors.primary} />
-          <Text style={styles.faqTitle}>Looking for quick answers?</Text>
-          <Text style={styles.faqSubtitle}>Check our FAQ section for common questions</Text>
-          <TouchableOpacity style={styles.faqButton}>
-            <Text style={styles.faqButtonText}>Go to FAQ</Text>
-            <MaterialCommunityIcons name="arrow-right" size={16} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -308,82 +284,59 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: 20,
+    paddingTop: 60,
     paddingBottom: 12,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  backBtn: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  backBtnGradient: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTextContainer: {
-    flex: 1,
+    marginBottom: 4,
   },
   title: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textLight,
+    marginBottom: 10,
   },
   whatsappQuickBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E7F9ED',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     gap: 8,
-    marginTop: 12,
     alignSelf: 'flex-start',
   },
   whatsappQuickText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#25D366',
   },
   contactCardsContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 10,
+    paddingVertical: 6,
+    gap: 8,
   },
   contactCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: colors.card,
     borderRadius: 8,
     padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
+    gap: 12,
   },
   contactIconBox: {
     width: 44,
     height: 44,
-    backgroundColor: colors.accent,
     borderRadius: 8,
+    backgroundColor: colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
   },
   contactInfo: {
     flex: 1,
@@ -392,7 +345,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textLight,
     fontWeight: '500',
-    marginBottom: 2,
   },
   contactValue: {
     fontSize: 13,
@@ -401,13 +353,13 @@ const styles = StyleSheet.create({
   },
   socialSection: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   socialButtons: {
     flexDirection: 'row',
@@ -418,7 +370,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 8,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -426,77 +378,39 @@ const styles = StyleSheet.create({
   },
   formSection: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   input: {
     backgroundColor: colors.card,
-    borderRadius: 6,
+    borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
-    color: colors.text,
-    marginBottom: 10,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: colors.border,
+    color: colors.text,
+    fontSize: 13,
   },
   messageInput: {
     height: 100,
-    textAlignVertical: 'top',
+    paddingTop: 10,
   },
   submitButton: {
     backgroundColor: colors.primary,
     borderRadius: 8,
-    paddingVertical: 14,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 12,
+    marginTop: 4,
   },
   submitButtonDisabled: {
     opacity: 0.6,
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  faqSection: {
-    marginHorizontal: 16,
-    marginVertical: 12,
-    backgroundColor: colors.accent,
-    borderRadius: 10,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  faqTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 10,
-  },
-  faqSubtitle: {
-    fontSize: 12,
-    color: colors.textLight,
-    marginTop: 4,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  faqButton: {
-    flexDirection: 'row',
-    backgroundColor: colors.primary,
-    borderRadius: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    alignItems: 'center',
-    gap: 6,
-  },
-  faqButtonText: {
-    color: '#fff',
-    fontSize: 13,
     fontWeight: '600',
   },
 });

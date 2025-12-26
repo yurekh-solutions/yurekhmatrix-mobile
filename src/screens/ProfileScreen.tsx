@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,15 @@ import {
   Image,
   Dimensions,
   Alert,
+  Modal,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { colors } from '@/src/styles/colors';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { getBuyerProfile, uploadProfilePicture, API_BASE_URL } from '@/src/lib/api';
 
 const { width } = Dimensions.get('window');
 
@@ -20,53 +25,174 @@ interface UserProfile {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  company: string;
-  role: string;
-  location: string;
+  phone?: string;
+  company?: string;
+  role?: string;
+  location?: string;
+  profilePicture?: string;
   avatar?: string;
-  memberSince: string;
-  totalRFQs: number;
-  completedOrders: number;
-  totalSpent: number;
+  memberSince?: string;
+  totalRFQs?: number;
+  completedOrders?: number;
+  totalSpent?: number;
 }
 
-const mockProfile: UserProfile = {
-  id: 'user-001',
-  name: 'Rajesh Kumar',
-  email: 'rajesh.kumar@company.com',
-  phone: '+91 9876543210',
-  company: 'BuildTech Solutions',
-  role: 'Procurement Manager',
-  location: 'Mumbai, India',
-  avatar: 'https://via.placeholder.com/120/c15738/ffffff?text=RK',
-  memberSince: 'January 2023',
-  totalRFQs: 45,
-  completedOrders: 23,
-  totalSpent: 1250000,
-};
-
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
-  const [profile, setProfile] = useState(mockProfile);
-  const [editMode, setEditMode] = useState(false);
+  const { user, logout, token, updateProfilePicture } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+  useEffect(() => {
+    loadProfileData();
+  }, []);
+
+  const loadProfileData = async () => {
+    try {
+      setLoading(true);
+      if (token && user) {
+        // Try to fetch from backend
+        const backendProfile = await getBuyerProfile(token);
+        if (backendProfile) {
+          setProfile(backendProfile.data || backendProfile);
+        } else {
+          // Fallback to auth context user data
+          setProfile({
+            id: user.id,
+            name: user.name || 'User',
+            email: user.email,
+            phone: user.phone || '+91 9876543210',
+            company: user.company || user.companyName || 'Company Name',
+            role: user.role || 'Procurement Manager',
+            location: user.location || 'Mumbai, India',
+            profilePicture: user.profilePicture || user.avatar,
+            memberSince: user.memberSince || 'January 2024',
+            totalRFQs: user.totalRFQs || 0,
+            completedOrders: user.completedOrders || 0,
+            totalSpent: user.totalSpent || 0,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      // Use auth context data as fallback
+      if (user) {
+        setProfile({
+          id: user.id,
+          name: user.name || 'User',
+          email: user.email,
+          phone: user.phone || '',
+          company: user.company || user.companyName,
+          role: user.role,
+          profilePicture: user.profilePicture || user.avatar,
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission denied', 'We need access to your photos to update your profile picture.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        uploadImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image');
+    }
+  };
+
+  const uploadImage = async (imageUri: string) => {
+    try {
+      setUploading(true);
+      if (!token) {
+        Alert.alert('Error', 'Not authenticated');
+        return;
+      }
+
+      const formData = new FormData();
+      // Create proper FormData entry with Blob-like object for React Native
+      formData.append('profileImage', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: 'profile.jpg',
+      } as any);
+
+      // Use the existing /user/profile PUT endpoint which supports file upload
+      // This is a workaround until the dedicated POST endpoint is deployed on Render
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type - let the browser/fetch handle it for FormData
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to upload profile picture');
+      }
+
+      if (data.success && (data.user?.profileImage || data.data?.profileImage)) {
+        const profileImageUrl = data.user?.profileImage || data.data?.profileImage;
+        await updateProfilePicture(profileImageUrl);
+        setProfile(
+          profile ? { ...profile, profilePicture: profileImageUrl, avatar: profileImageUrl } : null
+        );
+        Alert.alert('Success', 'Profile picture updated successfully!');
+      } else {
+        Alert.alert('Error', 'Upload completed but image URL missing');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to upload profile picture');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-          },
-        },
-      ]
-    );
+    setLogoutModalVisible(false);
+    logout();
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading Profile...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>No profile data available</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const StatCard = ({ icon, label, value }: { icon: string; label: string; value: string | number }) => (
     <View style={styles.statCard}>
@@ -81,30 +207,44 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header with Avatar */}
+        {/* Header with Avatar - GLASSMORPHISM */}
         <View style={styles.headerSection}>
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: profile.avatar }} style={styles.avatar} />
-            <TouchableOpacity style={styles.editAvatarButton}>
-              <MaterialCommunityIcons name="pencil" size={14} color="#fff" />
+            {uploading && (
+              <View style={styles.uploadingOverlay}>
+                <ActivityIndicator size="small" color="#ffffff" />
+              </View>
+            )}
+            <Image
+              source={
+                profile.profilePicture || profile.avatar
+                  ? { uri: profile.profilePicture || profile.avatar }
+                  : { uri: `https://via.placeholder.com/120/${colors.primary.replace('#', '')}/ffffff?text=${profile.name?.charAt(0) || 'U'}` }
+              }
+              style={styles.avatar}
+            />
+            <TouchableOpacity style={styles.editAvatarButton} onPress={pickImage} disabled={uploading}>
+              <MaterialCommunityIcons name="pencil" size={14} color="#ffffff" />
             </TouchableOpacity>
           </View>
 
           <Text style={styles.nameText}>{profile.name}</Text>
-          <Text style={styles.roleText}>{profile.role}</Text>
-          <Text style={styles.companyText}>{profile.company}</Text>
+          <Text style={styles.roleText}>{profile.role || 'Procurement Professional'}</Text>
+          <Text style={styles.companyText}>{profile.company || 'Company'}</Text>
 
-          <View style={styles.memberInfo}>
-            <MaterialCommunityIcons name="calendar-check" size={14} color={colors.textLight} />
-            <Text style={styles.memberText}>Member since {profile.memberSince}</Text>
-          </View>
+          {profile.memberSince && (
+            <View style={styles.memberInfo}>
+              <MaterialCommunityIcons name="calendar-check" size={14} color={colors.textLight} />
+              <Text style={styles.memberText}>Member since {profile.memberSince}</Text>
+            </View>
+          )}
         </View>
 
         {/* Quick Stats */}
         <View style={styles.statsSection}>
-          <StatCard icon="file-document-outline" label="Active RFQs" value={profile.totalRFQs} />
-          <StatCard icon="check-circle" label="Completed" value={profile.completedOrders} />
-          <StatCard icon="currency-inr" label="Total Spent" value={`₹${(profile.totalSpent / 100000).toFixed(1)}L`} />
+          <StatCard icon="file-document-outline" label="Active RFQs" value={profile.totalRFQs || 0} />
+          <StatCard icon="check-circle" label="Completed" value={profile.completedOrders || 0} />
+          <StatCard icon="currency-inr" label="Total Spent" value={profile.totalSpent ? `₹${(profile.totalSpent / 100000).toFixed(1)}L` : '₹0'} />
         </View>
 
         {/* Contact Information */}
@@ -123,49 +263,54 @@ export default function ProfileScreen() {
             <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textLight} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.infoCard}>
-            <MaterialCommunityIcons name="phone" size={20} color={colors.primary} />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Phone</Text>
-              <Text style={styles.infoValue}>{profile.phone}</Text>
-            </View>
-            <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textLight} />
-          </TouchableOpacity>
+          {profile.phone && (
+            <TouchableOpacity style={styles.infoCard}>
+              <MaterialCommunityIcons name="phone" size={20} color={colors.primary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Phone</Text>
+                <Text style={styles.infoValue}>{profile.phone}</Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textLight} />
+            </TouchableOpacity>
+          )}
 
-          <TouchableOpacity style={styles.infoCard}>
-            <MaterialCommunityIcons name="map-marker" size={20} color={colors.primary} />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Location</Text>
-              <Text style={styles.infoValue}>{profile.location}</Text>
-            </View>
-            <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textLight} />
-          </TouchableOpacity>
+          {profile.location && (
+            <TouchableOpacity style={styles.infoCard}>
+              <MaterialCommunityIcons name="map-marker" size={20} color={colors.primary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Location</Text>
+                <Text style={styles.infoValue}>{profile.location}</Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textLight} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Company Information */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <MaterialCommunityIcons name="office-building" size={18} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Company Details</Text>
-          </View>
-
-          <View style={styles.companyCard}>
-            <View style={styles.companyCardRow}>
-              <Text style={styles.companyLabel}>Company Name</Text>
-              <Text style={styles.companyValue}>{profile.company}</Text>
+        {profile.company && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <MaterialCommunityIcons name="office-building" size={18} color={colors.primary} />
+              <Text style={styles.sectionTitle}>Company Details</Text>
             </View>
-            <View style={styles.divider} />
-            <View style={styles.companyCardRow}>
-              <Text style={styles.companyLabel}>Role</Text>
-              <Text style={styles.companyValue}>{profile.role}</Text>
+
+            <View style={styles.companyCard}>
+              <View style={styles.companyCardRow}>
+                <Text style={styles.companyLabel}>Company Name</Text>
+                <Text style={styles.companyValue}>{profile.company}</Text>
+              </View>
+              {profile.role && (
+                <>
+                  <View style={styles.divider} />
+                  <View style={styles.companyCardRow}>
+                    <Text style={styles.companyLabel}>Role</Text>
+                    <Text style={styles.companyValue}>{profile.role}</Text>
+                  </View>
+                </>
+              )}
             </View>
           </View>
-
-          <TouchableOpacity style={styles.editCompanyButton}>
-            <MaterialCommunityIcons name="pencil" size={16} color={colors.primary} />
-            <Text style={styles.editCompanyText}>Edit Company Info</Text>
-          </TouchableOpacity>
-        </View>
+        )}
 
         {/* Account Actions */}
         <View style={styles.section}>
@@ -177,12 +322,6 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.actionButton}>
             <MaterialCommunityIcons name="history" size={18} color={colors.primary} />
             <Text style={styles.actionButtonText}>Order History</Text>
-            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textLight} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="star-outline" size={18} color={colors.primary} />
-            <Text style={styles.actionButtonText}>Saved Items</Text>
             <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textLight} />
           </TouchableOpacity>
 
@@ -199,35 +338,56 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Preferences */}
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="bell-outline" size={18} color={colors.primary} />
-            <Text style={styles.actionButtonText}>Notification Preferences</Text>
-            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textLight} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="language-javascript" size={18} color={colors.primary} />
-            <Text style={styles.actionButtonText}>Language & Region</Text>
-            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textLight} />
-          </TouchableOpacity>
-        </View>
-
         {/* Logout Button */}
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.logoutButton}
-            onPress={handleLogout}
+            onPress={() => setLogoutModalVisible(true)}
           >
             <MaterialCommunityIcons name="logout" size={18} color={colors.error} />
             <Text style={styles.logoutButtonText}>Logout</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Logout Confirmation Modal - GLASSMORPHISM */}
+      <Modal transparent visible={logoutModalVisible} animationType="fade" onRequestClose={() => setLogoutModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <MaterialCommunityIcons name="logout" size={40} color={colors.error} />
+              <Text style={styles.modalTitle}>Confirm Logout</Text>
+            </View>
+
+            {/* Modal Body */}
+            <View style={styles.modalBody}>
+              <Text style={styles.modalMessage}>Are you sure you want to logout? You&apos;ll need to login again to access your account.</Text>
+              <Text style={styles.modalUserInfo}>{profile.email}</Text>
+            </View>
+
+            {/* Modal Actions */}
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setLogoutModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.logoutConfirmButton}
+                onPress={handleLogout}
+              >
+                <MaterialCommunityIcons name="logout" size={16} color="#ffffff" />
+                <Text style={styles.logoutConfirmText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -237,6 +397,18 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: colors.textLight,
+    fontWeight: '600',
   },
   headerSection: {
     alignItems: 'center',
@@ -255,6 +427,17 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 3,
     borderColor: colors.primary,
+  },
+  uploadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 50,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   editAvatarButton: {
     position: 'absolute',
@@ -402,23 +585,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.border,
   },
-  editCompanyButton: {
-    flexDirection: 'row',
-    backgroundColor: colors.accent,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  editCompanyText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primary,
-  },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -453,5 +619,84 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.error,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    width: '85%',
+    maxWidth: 360,
+    borderWidth: 1,
+    borderColor: 'rgba(193, 87, 56, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.text,
+    marginTop: 12,
+  },
+  modalBody: {
+    marginBottom: 20,
+  },
+  modalMessage: {
+    fontSize: 14,
+    color: colors.textLight,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  modalUserInfo: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: colors.accent,
+    borderRadius: 8,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  logoutConfirmButton: {
+    flex: 1,
+    backgroundColor: colors.error,
+    borderRadius: 8,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  logoutConfirmText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
   },
 });

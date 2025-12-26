@@ -194,9 +194,10 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 16,
+    marginBottom: 8,
   },
   mainTitle: {
     fontSize: 28,

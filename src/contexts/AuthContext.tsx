@@ -5,8 +5,17 @@ interface User {
   id: string;
   email: string;
   name?: string;
+  phone?: string;
   companyName?: string;
+  company?: string;
   role?: string;
+  avatar?: string;
+  profilePicture?: string;
+  location?: string;
+  memberSince?: string;
+  totalRFQs?: number;
+  completedOrders?: number;
+  totalSpent?: number;
 }
 
 interface AuthContextType {
@@ -16,6 +25,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (token: string, userData: User) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => Promise<void>;
+  updateProfilePicture: (profilePicture: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -69,6 +80,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const updateUser = async (userData: Partial<User>) => {
+    try {
+      if (user) {
+        const updatedUser = { ...user, ...userData };
+        await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
+  };
+
+  const updateProfilePicture = async (profilePicture: string) => {
+    try {
+      if (user) {
+        const updatedUser = { ...user, profilePicture, avatar: profilePicture };
+        await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error updating profile picture:', error);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -78,6 +115,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isAuthenticated: !!token && !!user,
         login,
         logout,
+        updateUser,
+        updateProfilePicture,
       }}
     >
       {children}

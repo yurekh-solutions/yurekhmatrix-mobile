@@ -62,10 +62,11 @@ export interface RFQSubmission {
 }
 
 // Submit Material Inquiry
-export const submitMaterialInquiry = async (inquiryData: any, token?: string): Promise<{ success: boolean; message: string }> => {
+export const submitMaterialInquiry = async (inquiryData: any, token?: string): Promise<{ success: boolean; message: string; data?: any }> => {
   try {
     console.log('🚀 Submitting Material Inquiry to:', `${API_BASE_URL}/material-inquiries`);
     console.log('📊 Inquiry Data:', inquiryData);
+    console.log('📊 Materials in inquiry:', JSON.stringify(inquiryData.materials, null, 2));
 
     const headers: any = {
       'Content-Type': 'application/json',
@@ -75,10 +76,13 @@ export const submitMaterialInquiry = async (inquiryData: any, token?: string): P
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    const bodyData = JSON.stringify(inquiryData);
+    console.log('📦 Request body:', bodyData);
+
     const response = await fetch(`${API_BASE_URL}/material-inquiries`, {
       method: 'POST',
       headers,
-      body: JSON.stringify(inquiryData),
+      body: bodyData,
     });
 
     const data = await response.json();
@@ -90,9 +94,17 @@ export const submitMaterialInquiry = async (inquiryData: any, token?: string): P
 
     console.log('✅ Material Inquiry submitted successfully:', data);
 
+    // Extract inquiry number from message if present
+    const inquiryNumberMatch = data.message?.match(/Inquiry Number: (MI\d+)/);
+    const inquiryNumber = inquiryNumberMatch ? inquiryNumberMatch[1] : null;
+
     return {
       success: data.success || true,
       message: data.message || 'Inquiry submitted successfully. We will get back to you soon.',
+      data: {
+        ...data.data,
+        inquiryNumber: inquiryNumber || data.data?.inquiryNumber || 'N/A',
+      },
     };
   } catch (error) {
     console.error('❌ Error submitting inquiry:', error);
@@ -133,9 +145,9 @@ export const getRFQHistory = async (token: string): Promise<any[]> => {
 // Get buyer profile
 export const getBuyerProfile = async (token: string): Promise<any> => {
   try {
-    console.log('🚀 Fetching buyer profile');
+    console.log('🚀 Fetching buyer profile from:', `${API_BASE_URL}/user/profile`);
     
-    const response = await fetch(`${API_BASE_URL}/buyer/profile`, {
+    const response = await fetch(`${API_BASE_URL}/user/profile`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -150,7 +162,7 @@ export const getBuyerProfile = async (token: string): Promise<any> => {
     const data = await response.json();
     console.log('✅ Profile fetched:', data);
     
-    return data;
+    return data.user || data.data || data;
   } catch (error) {
     console.error('❌ Error fetching profile:', error);
     return null;
@@ -426,6 +438,77 @@ export const registerUser = async (userData: any): Promise<{ success: boolean; m
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Registration failed',
+    };
+  }
+};
+
+// Update buyer profile
+export const updateBuyerProfile = async (token: string, userData: any): Promise<{ success: boolean; data?: any; message: string }> => {
+  try {
+    console.log('🚀 Updating buyer profile to:', `${API_BASE_URL}/user/profile`);
+    
+    const response = await fetch(`${API_BASE_URL}/user/profile`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to update profile');
+    }
+    
+    console.log('✅ Profile updated successfully');
+    
+    return {
+      success: true,
+      data: data.user || data.data,
+      message: 'Profile updated successfully',
+    };
+  } catch (error) {
+    console.error('❌ Error updating profile:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to update profile',
+    };
+  }
+};
+
+// Upload profile picture
+export const uploadProfilePicture = async (token: string, formData: FormData): Promise<{ success: boolean; profilePicture?: string; message: string }> => {
+  try {
+    console.log('🚀 Uploading profile picture to:', `${API_BASE_URL}/user/profile-picture`);
+    
+    const response = await fetch(`${API_BASE_URL}/user/profile-picture`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to upload profile picture');
+    }
+    
+    console.log('✅ Profile picture uploaded successfully');
+    
+    return {
+      success: true,
+      profilePicture: data.profilePicture || data.data?.profileImage,
+      message: 'Profile picture uploaded successfully',
+    };
+  } catch (error) {
+    console.error('❌ Error uploading profile picture:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to upload profile picture',
     };
   }
 };

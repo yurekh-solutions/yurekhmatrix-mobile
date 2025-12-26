@@ -29,117 +29,57 @@ interface HelpTopic {
   color: string;
 }
 
-const helpTopics: HelpTopic[] = [
-  {
-    icon: 'account-help-outline',
-    title: 'Account & Login',
-    description: 'Help with account setup and login issues',
-    color: colors.primary,
-  },
-  {
-    icon: 'file-document-outline',
-    title: 'RFQ & Orders',
-    description: 'Learn how to create and manage RFQs',
-    color: colors.secondary,
-  },
-  {
-    icon: 'package-multiple',
-    title: 'Products',
-    description: 'Browse and search for materials',
-    color: colors.success,
-  },
-  {
-    icon: 'credit-card-outline',
-    title: 'Payments',
-    description: 'Payment methods and billing issues',
-    color: colors.warning,
-  },
-  {
-    icon: 'truck-delivery-outline',
-    title: 'Shipping',
-    description: 'Delivery tracking and shipping info',
-    color: colors.info,
-  },
-  {
-    icon: 'shield-check-outline',
-    title: 'Security',
-    description: 'Account security and privacy',
-    color: colors.error,
-  },
-];
-
-const faqData: FAQItem[] = [
-  {
-    id: '1',
-    question: 'How do I create an RFQ?',
-    answer: 'Click on the RFQ tab in the app, select the materials you need, specify quantities, and submit. Suppliers will respond with quotes.',
-    category: 'RFQ & Orders',
-  },
-  {
-    id: '2',
-    question: 'How long does it take to get quotes?',
-    answer: 'Typically, suppliers respond within 24 hours. You can track quote status in real-time through the app.',
-    category: 'RFQ & Orders',
-  },
-  {
-    id: '3',
-    question: 'Can I modify my RFQ after submission?',
-    answer: 'You can modify open RFQs. Once quotes are received, editing may affect supplier responses.',
-    category: 'RFQ & Orders',
-  },
-  {
-    id: '4',
-    question: 'What payment methods are accepted?',
-    answer: 'We accept bank transfers, credit cards, and digital wallets. Payment terms vary by supplier.',
-    category: 'Payments',
-  },
-  {
-    id: '5',
-    question: 'Is my information secure?',
-    answer: 'Yes, we use industry-standard encryption and security measures to protect your data.',
-    category: 'Security',
-  },
-  {
-    id: '6',
-    question: 'How do I track my order?',
-    answer: 'Orders can be tracked in the Order History section. Suppliers provide real-time tracking updates.',
-    category: 'Shipping',
-  },
-  {
-    id: '7',
-    question: 'What if I forgot my password?',
-    answer: 'Click "Forgot Password" on the login screen and follow the email instructions to reset it.',
-    category: 'Account & Login',
-  },
-  {
-    id: '8',
-    question: 'How do I contact a supplier?',
-    answer: 'You can message suppliers directly through the app chat feature or use the contact information provided in quotes.',
-    category: 'RFQ & Orders',
-  },
-  {
-    id: '9',
-    question: 'What are bulk discounts?',
-    answer: 'Larger orders often qualify for volume discounts. Check individual supplier offerings when requesting quotes.',
-    category: 'Products',
-  },
-  {
-    id: '10',
-    question: 'Can I return products?',
-    answer: 'Return policies vary by supplier. Check the terms when placing an order or contact the supplier directly.',
-    category: 'Orders',
-  },
-];
-
 export default function HelpCenterScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredFAQ, setFilteredFAQ] = useState(faqData);
+  const [filteredFAQ, setFilteredFAQ] = useState<FAQItem[]>([]);
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [faqData, setFaqData] = useState<FAQItem[]>([]);
+  const [helpTopics, setHelpTopics] = useState<HelpTopic[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHelpData();
+  }, []);
 
   useEffect(() => {
     filterFAQ();
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, faqData]);
+
+  const fetchHelpData = async () => {
+    try {
+      // TODO: Fetch from backend API
+      // For now, using fallback data
+      const defaultTopics: HelpTopic[] = [
+        { icon: 'account-help-outline', title: 'Account & Login', description: 'Help with account setup and login issues', color: colors.primary },
+        { icon: 'file-document-outline', title: 'RFQ & Orders', description: 'Learn how to create and manage RFQs', color: colors.secondary },
+        { icon: 'package-multiple', title: 'Products', description: 'Browse and search for materials', color: colors.success },
+        { icon: 'credit-card-outline', title: 'Payments', description: 'Payment methods and billing issues', color: colors.warning },
+        { icon: 'truck-delivery-outline', title: 'Shipping', description: 'Delivery tracking and shipping info', color: colors.info },
+        { icon: 'shield-check-outline', title: 'Security', description: 'Account security and privacy', color: colors.error },
+      ];
+
+      const defaultFAQ: FAQItem[] = [
+        { id: '1', question: 'How do I create an RFQ?', answer: 'Click on the RFQ tab in the app, select the materials you need, specify quantities, and submit. Suppliers will respond with quotes.', category: 'RFQ & Orders' },
+        { id: '2', question: 'How long does it take to get quotes?', answer: 'Typically, suppliers respond within 24 hours. You can track quote status in real-time through the app.', category: 'RFQ & Orders' },
+        { id: '3', question: 'Can I modify my RFQ after submission?', answer: 'You can modify open RFQs. Once quotes are received, editing may affect supplier responses.', category: 'RFQ & Orders' },
+        { id: '4', question: 'What payment methods are accepted?', answer: 'We accept bank transfers, credit cards, and digital wallets. Payment terms vary by supplier.', category: 'Payments' },
+        { id: '5', question: 'Is my information secure?', answer: 'Yes, we use industry-standard encryption and security measures to protect your data.', category: 'Security' },
+        { id: '6', question: 'How do I track my order?', answer: 'Orders can be tracked in the Order History section. Suppliers provide real-time tracking updates.', category: 'Shipping' },
+        { id: '7', question: 'What if I forgot my password?', answer: 'Click "Forgot Password" on the login screen and follow the email instructions to reset it.', category: 'Account & Login' },
+        { id: '8', question: 'How do I contact a supplier?', answer: 'You can message suppliers directly through the app chat feature or use the contact information provided in quotes.', category: 'RFQ & Orders' },
+        { id: '9', question: 'What are bulk discounts?', answer: 'Larger orders often qualify for volume discounts. Check individual supplier offerings when requesting quotes.', category: 'Products' },
+        { id: '10', question: 'Can I return products?', answer: 'Return policies vary by supplier. Check the terms when placing an order or contact the supplier directly.', category: 'Orders' },
+      ];
+
+      setHelpTopics(defaultTopics);
+      setFaqData(defaultFAQ);
+    } catch (error) {
+      console.error('Error fetching help data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filterFAQ = () => {
     let filtered = faqData;
@@ -160,7 +100,7 @@ export default function HelpCenterScreen() {
     setFilteredFAQ(filtered);
   };
 
-  const categories = [
+  const categories: string[] = [
     'All',
     ...new Set(faqData.map((item) => item.category)),
   ];
@@ -204,6 +144,16 @@ export default function HelpCenterScreen() {
       </TouchableOpacity>
     );
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -311,9 +261,10 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: 20,
+    paddingTop: 60,
     paddingBottom: 12,
+    marginBottom: 4,
   },
   title: {
     fontSize: 28,
@@ -327,7 +278,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginHorizontal: 16,
-    marginVertical: 12,
+    marginVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.card,
@@ -345,13 +296,13 @@ const styles = StyleSheet.create({
   },
   topicsSection: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   topicsGrid: {
     flexDirection: 'row',
@@ -394,10 +345,10 @@ const styles = StyleSheet.create({
   },
   faqSection: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   categoriesScroll: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   categoriesList: {
     gap: 8,
@@ -461,7 +412,7 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 30,
   },
   emptyText: {
     fontSize: 16,
@@ -476,10 +427,10 @@ const styles = StyleSheet.create({
   },
   supportSection: {
     marginHorizontal: 16,
-    marginVertical: 12,
+    marginVertical: 8,
     backgroundColor: colors.accent,
     borderRadius: 10,
-    paddingVertical: 20,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     alignItems: 'center',
     borderWidth: 1,

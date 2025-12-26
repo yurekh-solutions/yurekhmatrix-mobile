@@ -20,7 +20,7 @@ import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 2;
+const CARD_WIDTH = (width - 52) / 2;
 
 // Design System Colors
 const COLORS = {
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 16,
+    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
@@ -419,37 +419,35 @@ const styles = StyleSheet.create({
 
   // Search
   searchSection: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     paddingHorizontal: 20,
-    paddingBottom: 16,
-    gap: 12,
+    paddingVertical: 12,
+    gap: 10,
   },
 
   searchBar: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     backgroundColor: COLORS.white,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 2,
     borderColor: COLORS.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    gap: 10,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 2,
   },
 
   searchInput: {
     flex: 1,
-    marginHorizontal: 8,
-    fontSize: 14,
+    fontSize: 16,
     color: COLORS.text,
     fontWeight: '500',
-    outlineWidth: 0,
-    outlineStyle: 'none',
     borderWidth: 0,
     borderColor: 'transparent',
   },
@@ -460,12 +458,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    marginTop: 20,
+    marginBottom: 12,
   },
 
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
     color: COLORS.text,
   },
 
@@ -491,13 +490,13 @@ const styles = StyleSheet.create({
   categoryButtonActive: {},
 
   categoryIconBox: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
+    width: 64,
+    height: 64,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'rgba(193, 87, 56, 0.2)',
   },
 
   categoryButtonText: {
@@ -505,7 +504,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.textLight,
     textAlign: 'center',
-    maxWidth: 50,
+    maxWidth: 70,
   },
 
   categoryButtonTextActive: {
@@ -522,12 +521,13 @@ const styles = StyleSheet.create({
   columnWrapper: {
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 16,
     gap: 12,
+    marginBottom: 12,
   },
 
   gridContent: {
-    paddingTop: 0,
+    paddingHorizontal: 0,
+    paddingBottom: 20,
   },
 
   productCard: {

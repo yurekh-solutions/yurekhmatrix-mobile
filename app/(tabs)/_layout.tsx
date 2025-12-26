@@ -81,7 +81,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="rfq"
         options={{
-          title: 'RFQ/Cart',
+          title: 'RFQ',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
               <MaterialCommunityIcons name={focused ? 'cart' : 'cart-outline'} size={28} color={color} />

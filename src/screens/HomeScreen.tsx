@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import MaskedView from "@react-native-masked-view/masked-view";
+// import MaskedView from "@react-native-masked-view/masked-view";
 // import LinearGradient from "react-native-linear-gradient";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -20,7 +20,7 @@ import { getProducts } from '../lib/api';
 import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
 
 // Design System Colors
@@ -313,9 +313,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   </TouchableOpacity>
                 ) : null}
               </View>
-              <TouchableOpacity style={styles.filterButton}>
-                <MaterialCommunityIcons name="tune" size={24} color={COLORS.white} />
-              </TouchableOpacity>
             </View>
   
             <ScrollView
@@ -588,18 +585,18 @@ const styles = StyleSheet.create({
 
   // Search
   searchSection: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     paddingHorizontal: 20,
-    paddingBottom: 16,
-    gap: 12,
+    paddingVertical: 12,
+    gap: 0,
   },
 
   searchBar: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     backgroundColor: COLORS.white,
     borderRadius: 14,
     borderWidth: 2,
@@ -614,25 +611,11 @@ const styles = StyleSheet.create({
 
   searchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     color: COLORS.text,
     fontWeight: '500',
     borderWidth: 0,
     borderColor: 'transparent',
-  },
-
-  filterButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
   },
 
   // Scroll Content
@@ -713,18 +696,18 @@ const styles = StyleSheet.create({
   },
 
   bannerTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '900',
     color: COLORS.white,
-    lineHeight: 38,
-    marginTop: 4,
+    lineHeight: 32,
+    marginTop: 8,
   },
 
   bannerDescription: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.9)',
-    lineHeight: 18,
+    color: 'rgba(255, 255, 255, 0.95)',
+    lineHeight: 16,
   },
 
   trustBadge: {

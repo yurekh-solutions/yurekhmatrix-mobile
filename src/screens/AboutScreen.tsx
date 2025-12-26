@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
-  Image,
+  ActivityIndicator,
   Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -21,15 +20,59 @@ interface TeamMember {
   icon: string;
 }
 
-const teamMembers: TeamMember[] = [
-  { id: '1', name: 'Innovation', role: 'Cutting-edge technology', icon: 'lightbulb' },
-  { id: '2', name: 'Integrity', role: 'Transparent dealings', icon: 'shield-check' },
-  { id: '3', name: 'Efficiency', role: 'Fast turnaround', icon: 'lightning-bolt' },
-  { id: '4', name: 'Support', role: '24/7 assistance', icon: 'headset' },
-];
+interface Stat {
+  icon: string;
+  number: string;
+  label: string;
+}
 
 export default function AboutScreen() {
-  const StatBox = ({ icon, number, label }: { icon: string; number: string; label: string }) => (
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [stats, setStats] = useState<Stat[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAboutData();
+  }, []);
+
+  const fetchAboutData = async () => {
+    try {
+      // TODO: Fetch from backend API
+      // For now, using fallback data
+      const defaultTeam: TeamMember[] = [
+        { id: '1', name: 'Innovation', role: 'Cutting-edge technology', icon: 'lightbulb' },
+        { id: '2', name: 'Integrity', role: 'Transparent dealings', icon: 'shield-check' },
+        { id: '3', name: 'Efficiency', role: 'Fast turnaround', icon: 'lightning-bolt' },
+        { id: '4', name: 'Support', role: '24/7 assistance', icon: 'headset' },
+      ];
+
+      const defaultStats: Stat[] = [
+        { icon: 'store-outline', number: '500+', label: 'Active Suppliers' },
+        { icon: 'briefcase-outline', number: '10K+', label: 'Monthly Orders' },
+        { icon: 'map-marker-multiple', number: '50+', label: 'Cities Covered' },
+        { icon: 'users-outline', number: '5K+', label: 'Registered Buyers' },
+      ];
+
+      setTeamMembers(defaultTeam);
+      setStats(defaultStats);
+    } catch (error) {
+      console.error('Error fetching about data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const StatBox = ({ icon, number, label }: Stat) => (
     <View style={styles.statBox}>
       <View style={styles.statIcon}>
         <MaterialCommunityIcons name={icon as any} size={24} color={colors.primary} />
@@ -64,10 +107,9 @@ export default function AboutScreen() {
 
         {/* Statistics */}
         <View style={styles.statsSection}>
-          <StatBox icon="store-outline" number="500+" label="Active Suppliers" />
-          <StatBox icon="briefcase-outline" number="10K+" label="Monthly Orders" />
-          <StatBox icon="map-marker-multiple" number="50+" label="Cities Covered" />
-          <StatBox icon="users-outline" number="5K+" label="Registered Buyers" />
+          {stats.map((stat) => (
+            <StatBox key={stat.label} {...stat} />
+          ))}
         </View>
 
         {/* Core Values */}
@@ -169,11 +211,6 @@ export default function AboutScreen() {
               </View>
             </View>
           </View>
-
-          <TouchableOpacity style={styles.contactButton}>
-            <MaterialCommunityIcons name="email-outline" size={16} color="#fff" />
-            <Text style={styles.contactButtonText}>Contact Us</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Version Info */}
@@ -197,43 +234,42 @@ const styles = StyleSheet.create({
   },
   heroSection: {
     alignItems: 'center',
-    paddingVertical: 28,
-    backgroundColor: colors.primary,
+    paddingVertical: 24,
+    paddingTop: 60,
   },
   logoBox: {
-    width: 60,
-    height: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    backgroundColor: colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#fff',
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: colors.primary,
     marginBottom: 4,
   },
   heroSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+    color: colors.textLight,
   },
   section: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 10,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
     marginBottom: 12,
   },
   missionBox: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.card,
     borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
+    padding: 12,
     flexDirection: 'row',
     gap: 10,
     borderWidth: 1,
@@ -242,33 +278,31 @@ const styles = StyleSheet.create({
   missionText: {
     flex: 1,
     fontSize: 12,
-    color: colors.text,
+    color: colors.textLight,
     lineHeight: 18,
-    fontWeight: '500',
   },
   statsSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     gap: 10,
     justifyContent: 'space-between',
   },
   statBox: {
-    width: (Dimensions.get('window').width - 52) / 2,
+    width: (width - 52) / 2,
     backgroundColor: colors.card,
     borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
+    padding: 12,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
   },
   statIcon: {
-    width: 40,
-    height: 40,
-    backgroundColor: colors.accent,
+    width: 44,
+    height: 44,
     borderRadius: 8,
+    backgroundColor: colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -277,11 +311,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.primary,
+    marginBottom: 4,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.textLight,
-    marginTop: 4,
     textAlign: 'center',
   },
   valuesGrid: {
@@ -291,11 +325,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   valueCard: {
-    width: (Dimensions.get('window').width - 52) / 2,
+    width: (width - 52) / 2,
     backgroundColor: colors.card,
     borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
+    padding: 12,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
@@ -303,34 +336,33 @@ const styles = StyleSheet.create({
   valueIcon: {
     width: 44,
     height: 44,
-    backgroundColor: colors.accent,
     borderRadius: 8,
+    backgroundColor: colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
   },
   valueName: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
     color: colors.text,
-    textAlign: 'center',
+    marginBottom: 4,
   },
   valueDescription: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.textLight,
-    marginTop: 4,
     textAlign: 'center',
   },
   featureItem: {
     flexDirection: 'row',
-    marginBottom: 14,
+    marginBottom: 12,
     gap: 10,
   },
   featureNumber: {
     width: 36,
     height: 36,
-    backgroundColor: colors.primary,
     borderRadius: 8,
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -341,12 +373,6 @@ const styles = StyleSheet.create({
   },
   featureContent: {
     flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   featureTitle: {
     fontSize: 13,
@@ -355,9 +381,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   featureDescription: {
-    fontSize: 11,
+    fontSize: 12,
     color: colors.textLight,
-    lineHeight: 15,
+    lineHeight: 16,
   },
   contactCard: {
     backgroundColor: colors.card,
@@ -365,58 +391,45 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
-    marginBottom: 10,
   },
   contactItem: {
     flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    padding: 12,
     gap: 10,
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   contactInfo: {
     flex: 1,
   },
   contactLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.textLight,
-    marginBottom: 2,
     fontWeight: '500',
   },
   contactValue: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.text,
     fontWeight: '600',
+    marginTop: 2,
   },
   contactDivider: {
     height: 1,
     backgroundColor: colors.border,
   },
-  contactButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  contactButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   footerSection: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginTop: 8,
   },
   versionText: {
     fontSize: 12,
-    color: colors.text,
     fontWeight: '600',
+    color: colors.text,
   },
   copyrightText: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.textLight,
     marginTop: 4,
   },
