@@ -141,26 +141,26 @@ export default function RFQTab() {
 
       // Try to submit to backend (optional - offline mode still works)
       let backendSubmitted = false;
+      const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://backendmatrix.onrender.com/api';
       try {
         const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}/rfqs`,
+          `${API_URL}/rfqs`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(rfqPayload),
-            timeout: 5000,
           }
         );
 
         if (response.ok) {
           backendSubmitted = true;
-          console.log('RFQ submitted to backend successfully at:', process.env.EXPO_PUBLIC_API_URL);
+          console.log('RFQ submitted to backend successfully at:', API_URL);
         }
-      } catch (backendError) {
+      } catch (backendError: any) {
         // Backend failed - continue with offline mode
-        console.log('Backend unavailable - continuing with WhatsApp submission', backendError?.message);
+        console.log('Backend unavailable - continuing with WhatsApp submission', backendError?.message || 'Unknown error');
       }
 
       // Build WhatsApp message with all details - Material Requirements FIRST

@@ -215,14 +215,18 @@ export default function ProfileScreen() {
                 <ActivityIndicator size="small" color="#ffffff" />
               </View>
             )}
-            <Image
-              source={
-                profile.profilePicture || profile.avatar
-                  ? { uri: profile.profilePicture || profile.avatar }
-                  : { uri: `https://via.placeholder.com/120/${colors.primary.replace('#', '')}/ffffff?text=${profile.name?.charAt(0) || 'U'}` }
-              }
-              style={styles.avatar}
-            />
+            {profile.profilePicture || profile.avatar ? (
+              <Image
+                source={{ uri: profile.profilePicture || profile.avatar }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ fontSize: 40, fontWeight: '700', color: colors.card }}>
+                  {profile.name?.charAt(0)?.toUpperCase() || 'U'}
+                </Text>
+              </View>
+            )}
             <TouchableOpacity style={styles.editAvatarButton} onPress={pickImage} disabled={uploading}>
               <MaterialCommunityIcons name="pencil" size={14} color="#ffffff" />
             </TouchableOpacity>
