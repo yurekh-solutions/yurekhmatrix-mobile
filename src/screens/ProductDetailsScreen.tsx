@@ -17,6 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CartService from '../lib/cartService';
 import { useAuth } from '../contexts/AuthContext';
+import { GuestSignupModal } from '../components/GuestSignupModal';
 
 const { width } = Dimensions.get('window');
 
@@ -69,6 +70,7 @@ const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({ product, on
   const [brandDropdownVisible, setBrandDropdownVisible] = React.useState(false);
   const [gradeDropdownVisible, setGradeDropdownVisible] = React.useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = React.useState(false);
+  const [showGuestModal, setShowGuestModal] = React.useState(false);
 
   const imageSource = (typeof product.image === 'object' && product.image !== null)
     ? product.image
@@ -102,25 +104,7 @@ Available on RitzYard - Smart Material Procurement Platform`;
   const handleAddToCart = async () => {
     // Check authentication first
     if (!isAuthenticated) {
-      Alert.alert(
-        'Login Required',
-        'Please log in to add items to your cart.',
-        [
-          {
-            text: 'Cancel',
-            onPress: () => {},
-            style: 'cancel',
-          },
-          {
-            text: 'Go to Login',
-            onPress: () => {
-              if (navigation && navigation.navigate) {
-                navigation.navigate('auth');
-              }
-            },
-          },
-        ]
-      );
+      setShowGuestModal(true);
       return;
     }
 
@@ -566,6 +550,19 @@ Available on RitzYard - Smart Material Procurement Platform`;
           </View>
         </ScrollView>
       </LinearGradient>
+
+      {/* Guest Signup Modal */}
+      <GuestSignupModal
+        visible={showGuestModal}
+        onClose={() => setShowGuestModal(false)}
+        onSignup={() => {
+          setShowGuestModal(false);
+          // The modal is shown when user is not authenticated
+          // Just close it and let them sign up naturally on next app restart
+          // or add Alert to tell them to restart
+        }}
+        message="Please sign up to add items to your cart and start procurement"
+      />
     </View>
   );
 };

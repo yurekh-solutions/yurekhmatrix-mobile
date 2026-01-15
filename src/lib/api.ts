@@ -2,6 +2,7 @@
 // Connects to backendmatrix for RFQ submissions
 // Uses local products as fallback when API is unavailable
 
+import { Platform } from 'react-native';
 import { allLocalProducts, LocalProduct } from '@/src/data/localProducts';
 
 /**
@@ -262,16 +263,55 @@ export const getProducts = async (category?: string): Promise<any[]> => {
     }
     
     const data = await response.json();
-    const products = Array.isArray(data) ? data : (data.products || data.data || []);
+    const backendProducts = Array.isArray(data) ? data : (data.products || data.data || []);
     
-    if (products.length > 0) {
-      console.log('✅ Products fetched from backend:', products.length, 'items');
-      return products;
+    console.log('✅ Products fetched from backend:', backendProducts.length, 'items');
+    
+    // Always merge backend products with local products for complete catalog
+    let localProducts = allLocalProducts;
+    if (category && category !== 'all') {
+      localProducts = allLocalProducts.filter(p => p.category === category);
     }
     
-    // If backend returns empty, use local products
-    console.log('⚠️ Backend returned no products, using local products');
-    throw new Error('No products from backend');
+    // Convert local products to backend format
+    const convertedLocalProducts = localProducts.map(convertLocalProductToBackend);
+    
+    // Merge: Prefer local products with valid images, supplement with backend
+    // Remove duplicates based on product name
+    const productMap = new Map<string, any>();
+    
+    // Add local products FIRST (they have valid bundled images)
+    convertedLocalProducts.forEach((p: any) => {
+      productMap.set(p.name?.toLowerCase(), p);
+    });
+    
+    // Add backend products that don't exist in local OR have better data
+    backendProducts.forEach((p: any) => {
+      const key = p.name?.toLowerCase();
+      const existing = productMap.get(key);
+      
+      if (!existing) {
+        // Product not in local, add from backend
+        productMap.set(key, p);
+      } else if (p.image && p.image.startsWith('http')) {
+        // Backend has valid URL image, merge data but keep local image as fallback
+        productMap.set(key, {
+          ...existing,
+          ...p,
+          image: existing.image || p.image, // Prefer local image
+          _id: p._id || existing._id,
+          supplierId: p.supplierId || existing.supplierId
+        });
+      }
+    });
+    
+    const mergedProducts = Array.from(productMap.values());
+    console.log('✅ Total products (backend + local):', mergedProducts.length, 'items');
+    console.log('   - Backend products:', backendProducts.length);
+    console.log('   - Local products:', convertedLocalProducts.length);
+    console.log('   - Merged unique products:', mergedProducts.length);
+    
+    return mergedProducts;
   } catch (error) {
     console.error('❌ Error fetching products from backend:', error);
     console.log('📦 Using local products as fallback');
@@ -331,13 +371,12 @@ export const getProductById = async (productId: string): Promise<any> => {
   }
 };
 
-// Supplier login - for RitzYard mobile app (supplier login)
+// Buyer login - for RitzYard mobile app
 export const buyerLogin = async (email: string, password: string): Promise<{ success: boolean; token?: string; user?: any; message: string }> => {
   try {
-    console.log('🚀 Supplier login attempt:', email);
+    console.log('🚀 Buyer login attempt:', email);
     
-    // Changed from /auth/buyer/login to /auth/supplier/login
-    const response = await fetch(`${API_BASE_URL}/auth/supplier/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/user/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -368,32 +407,177 @@ export const buyerLogin = async (email: string, password: string): Promise<{ suc
   }
 };
 
-// Buyer registration - for RitzYard mobile app (supplier registration)
+// Buyer registration - for RitzYard mobile app
 export const buyerRegister = async (userData: any): Promise<{ success: boolean; message: string }> => {
   try {
-    console.log('🚀 Supplier registration:', userData.email);
+    console.log('🚀 Buyer registration:', userData.email);
+    console.log('📊 Registration Fields:', Object.keys(userData));
     
-    // Changed from /auth/buyer/register to /auth/supplier/register
-    const response = await fetch(`${API_BASE_URL}/auth/supplier/register`, {
+    // TEMPORARY FIX: Register without image first, then upload image separately
+    // This works around the backend FormData parsing issue
+    console.log('📝 Using JSON registration (image upload disabled temporarily)');
+    
+    const registrationData = {
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      phone: userData.phone,
+      company: userData.company,
+    };
+    
+    console.log('📦 Sending JSON to:', `${API_BASE_URL}/auth/user/signup`);
+    const response = await fetch(`${API_BASE_URL}/auth/user/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify(registrationData),
     });
     
+    console.log('✅ Response status:', response.status, response.statusText);
     const data = await response.json();
+    console.log('📝 Response data:', data);
     
     if (!response.ok) {
+      console.error('❌ Registration failed:', data.message);
       throw new Error(data.message || 'Registration failed');
     }
     
-    console.log('✅ Supplier registered successfully');
-    
+    console.log('✅ Registration successful!');
     return {
       success: true,
-      message: 'Registration successful. Please check your email to verify your account.',
+      message: data.message || 'Registration successful',
     };
+    
+    /* ORIGINAL CODE WITH IMAGE UPLOAD - WILL BE RE-ENABLED AFTER BACKEND FIX
+    // Check if userData contains images (profile or business)
+    const hasImages = userData.profileImage || userData.businessImage;
+    
+    if (hasImages) {
+      console.log('🖼️ Images detected - using FormData');
+      const formData = new FormData();
+      
+      // Add all basic fields to FormData - EXPLICITLY set as text
+      const textFields = ['name', 'email', 'password', 'company', 'phone'];
+      textFields.forEach(key => {
+        if (userData[key]) {
+          formData.append(key, String(userData[key]));
+          console.log(`  ✓ Added field: ${key} = ${userData[key]}`);
+        }
+      });
+
+      // Add profile image to FormData
+      if (userData.profileImage) {  
+        console.log('📸 Profile Image detected:', typeof userData.profileImage);
+        // Handle different profileImage formats
+        if (typeof userData.profileImage === 'object' && userData.profileImage.uri) {
+          // Object with uri (from AuthScreen)
+          if (Platform.OS === 'web' && userData.profileImage.blob) {
+            // Web: Use blob directly with proper filename
+            formData.append('profileImage', userData.profileImage.blob, `profile-${Date.now()}.jpg`);
+            console.log('  ✓ Added profile image (Web Blob)');
+          } else {
+            // Mobile: Create proper file object
+            const uriParts = userData.profileImage.uri.split('.');
+            const fileType = uriParts[uriParts.length - 1];
+            
+            formData.append('profileImage', {
+              uri: userData.profileImage.uri,
+              type: `image/${fileType}`,
+              name: `profile-${Date.now()}.${fileType}`,
+            } as any);
+            console.log('  ✓ Added profile image (Mobile URI):', userData.profileImage.uri);
+          }
+        } else if (typeof userData.profileImage === 'string') {
+          // String URI (direct path)
+          formData.append('profileImage', {
+            uri: userData.profileImage,
+            type: 'image/jpeg',
+            name: `profile-${Date.now()}.jpg`,
+          } as any);
+          console.log('  ✓ Added profile image (String URI):', userData.profileImage);
+        }
+      }
+
+      // Add business image to FormData
+      if (userData.businessImage) {
+        console.log('🏬 Business Image detected:', typeof userData.businessImage);
+        // Handle different businessImage formats
+        if (typeof userData.businessImage === 'object' && userData.businessImage.uri) {
+          // Object with uri (from AuthScreen)
+          if (Platform.OS === 'web' && userData.businessImage.blob) {
+            formData.append('businessImage', userData.businessImage.blob, 'business.jpg');
+            console.log('  ✓ Added business image (Web Blob)');
+          } else {
+            formData.append('businessImage', {
+              uri: userData.businessImage.uri,
+              type: 'image/jpeg',
+              name: 'business.jpg',
+            } as any);
+            console.log('  ✓ Added business image (Mobile URI):', userData.businessImage.uri);
+          }
+        } else if (typeof userData.businessImage === 'string') {
+          // String URI (direct path)
+          formData.append('businessImage', {
+            uri: userData.businessImage,
+            type: 'image/jpeg',
+            name: 'business.jpg',
+          } as any);
+          console.log('  ✓ Added business image (String URI):', userData.businessImage);
+        }
+      }
+
+      console.log('📦 Sending FormData to:', `${API_BASE_URL}/auth/user/signup`);
+      
+      // Log FormData contents for debugging
+      console.log('🔍 FormData contents:');
+      for (const pair of (formData as any).entries()) {
+        console.log(`  - ${pair[0]}:`, typeof pair[1] === 'object' ? 'File/Blob' : pair[1]);
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/auth/user/signup`, {
+        method: 'POST',
+        body: formData,
+        // DO NOT set Content-Type header - let browser set it automatically with boundary
+      });
+
+      console.log('✅ Response status:', response.status, response.statusText);
+      const data = await response.json();
+      console.log('📝 Response data:', data);
+      
+      if (!response.ok) {
+        console.error('❌ Registration failed:', data.message || response.statusText);
+        throw new Error(data.message || 'Registration failed');
+      }
+      
+      console.log('✅ Registration successful!');
+      return {
+        success: true,
+        message: 'Registration successful. Welcome aboard!',
+      };
+    } else {
+      // Normal JSON registration if no image
+      console.log('📝 No images - using JSON');
+      const response = await fetch(`${API_BASE_URL}/auth/user/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+      
+      return {
+        success: true,
+        message: 'Registration successful. Welcome aboard!',
+      };
+    }
+    */
   } catch (error) {
     console.error('❌ Error registering:', error);
     return {
