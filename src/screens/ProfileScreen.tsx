@@ -30,6 +30,7 @@ interface UserProfile {
   role?: string;
   location?: string;
   profilePicture?: string;
+  businessImage?: string;
   avatar?: string;
   memberSince?: string;
   totalRFQs?: number;
@@ -57,16 +58,19 @@ export default function ProfileScreen() {
         if (backendProfile) {
           setProfile(backendProfile.data || backendProfile);
         } else {
-          // Fallback to auth context user data
+          // If profile fetch fails with 401 or null, handle gracefully
+          console.warn('Profile fetch returned null, could be unauthorized or network error');
+          // Don't force logout here to allow offline mode with local data
           setProfile({
             id: user.id,
             name: user.name || 'User',
             email: user.email,
-            phone: user.phone || '+91 9876543210',
-            company: user.company || user.companyName || 'Company Name',
+            phone: user.phone || '',
+            company: user.company || user.companyName || '',
             role: user.role || 'Procurement Manager',
-            location: user.location || 'Mumbai, India',
+            location: user.location || '',
             profilePicture: user.profilePicture || user.avatar,
+            businessImage: user.businessImage,
             memberSince: user.memberSince || 'January 2024',
             totalRFQs: user.totalRFQs || 0,
             completedOrders: user.completedOrders || 0,
@@ -76,7 +80,7 @@ export default function ProfileScreen() {
       }
     } catch (error) {
       console.error('Error loading profile:', error);
-      // Use auth context data as fallback
+      // Fallback to auth context user data
       if (user) {
         setProfile({
           id: user.id,
@@ -86,6 +90,7 @@ export default function ProfileScreen() {
           company: user.company || user.companyName,
           role: user.role,
           profilePicture: user.profilePicture || user.avatar,
+          businessImage: user.businessImage,
         });
       }
     } finally {
@@ -93,7 +98,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const pickImage = async () => {
+  const pickImage = async (type: 'profile' | 'business' = 'profile') => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
@@ -109,7 +114,7 @@ export default function ProfileScreen() {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        uploadImage(result.assets[0].uri);
+        uploadImage(result.assets[0].uri, type);
       }
     } catch (error) {
       console.error('Error picking image:', error);
@@ -117,7 +122,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const uploadImage = async (imageUri: string) => {
+  const uploadImage = async (imageUri: string, type: 'profile' | 'business') => {
     try {
       setUploading(true);
       if (!token) {
@@ -126,20 +131,39 @@ export default function ProfileScreen() {
       }
 
       const formData = new FormData();
-      // Create proper FormData entry with Blob-like object for React Native
-      formData.append('profileImage', {
-        uri: imageUri,
-        type: 'image/jpeg',
-        name: 'profile.jpg',
-      } as any);
+      const fieldName = type === 'profile' ? 'profileImage' : 'businessImage';
+      const fileName = type === 'profile' ? 'profile.jpg' : 'business.jpg';
+      
+      if (Platform.OS === 'web') {
+        // For Web, we need to convert the URI to a Blob
+        try {
+          const response = await fetch(imageUri);
+          const blob = await response.blob();
+          formData.append(fieldName, blob, fileName);
+        } catch (webError) {
+          console.error('Error converting URI to blob on web:', webError);
+          // Fallback if fetch/blob fails
+          formData.append(fieldName, {
+            uri: imageUri,
+            type: 'image/jpeg',
+            name: fileName,
+          } as any);
+        }
+      } else {
+        // For Mobile (iOS/Android)
+        formData.append(fieldName, {
+          uri: imageUri,
+          type: 'image/jpeg',
+          name: fileName,
+        } as any);
+      }
 
       // Use the existing /user/profile PUT endpoint which supports file upload
-      // This is a workaround until the dedicated POST endpoint is deployed on Render
       const response = await fetch(`${API_BASE_URL}/user/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type - let the browser/fetch handle it for FormData
+          // Don't set Content-Type for FormData
         },
         body: formData,
       });
@@ -150,13 +174,15 @@ export default function ProfileScreen() {
         throw new Error(data.message || 'Failed to upload profile picture');
       }
 
-      if (data.success && (data.user?.profileImage || data.data?.profileImage)) {
-        const profileImageUrl = data.user?.profileImage || data.data?.profileImage;
-        await updateProfilePicture(profileImageUrl);
-        setProfile(
-          profile ? { ...profile, profilePicture: profileImageUrl, avatar: profileImageUrl } : null
-        );
-        Alert.alert('Success', 'Profile picture updated successfully!');
+      if (data.success) {
+        const userUpdate = data.user || data.data;
+        if (type === 'profile' && userUpdate.profileImage) {
+          await updateProfilePicture(userUpdate.profileImage);
+          setProfile(profile ? { ...profile, profilePicture: userUpdate.profileImage, avatar: userUpdate.profileImage } : null);
+        } else if (type === 'business' && userUpdate.businessImage) {
+          setProfile(profile ? { ...profile, businessImage: userUpdate.businessImage } : null);
+        }
+        Alert.alert('Success', `${type === 'profile' ? 'Profile picture' : 'Business logo'} updated successfully!`);
       } else {
         Alert.alert('Error', 'Upload completed but image URL missing');
       }
@@ -227,12 +253,29 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             )}
-            <TouchableOpacity style={styles.editAvatarButton} onPress={pickImage} disabled={uploading}>
+            <TouchableOpacity style={styles.editAvatarButton} onPress={() => pickImage('profile')} disabled={uploading}>
               <MaterialCommunityIcons name="pencil" size={14} color="#ffffff" />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.nameText}>{profile.name}</Text>
+          {/* Company Logo Display */}
+          {profile.businessImage && (
+            <View style={styles.businessLogoContainer}>
+              <Image source={{ uri: profile.businessImage }} style={styles.businessLogo} />
+              <TouchableOpacity style={styles.editBusinessButton} onPress={() => pickImage('business')}>
+                <MaterialCommunityIcons name="camera" size={12} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {!profile.businessImage && profile.company && (
+            <TouchableOpacity style={styles.addBusinessLogoButton} onPress={() => pickImage('business')}>
+              <MaterialCommunityIcons name="office-building" size={16} color={colors.primary} />
+              <Text style={styles.addLogoText}>Add Business Logo</Text>
+            </TouchableOpacity>
+          )}
+          
+          <Text style={styles.profileName}>{profile.name}</Text>
           <Text style={styles.roleText}>{profile.role || 'Procurement Professional'}</Text>
           <Text style={styles.companyText}>{profile.company || 'Company'}</Text>
 
@@ -354,20 +397,32 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
 
-      {/* Logout Confirmation Modal - GLASSMORPHISM */}
+      {/* Logout Confirmation Modal - PREMIUM GLASSMORPHISM */}
       <Modal transparent visible={logoutModalVisible} animationType="fade" onRequestClose={() => setLogoutModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
+            {/* Close Button */}
+            <TouchableOpacity 
+              style={styles.modalCloseButton} 
+              onPress={() => setLogoutModalVisible(false)}
+            >
+              <MaterialCommunityIcons name="close" size={20} color={colors.textLight} />
+            </TouchableOpacity>
+
             {/* Modal Header */}
             <View style={styles.modalHeader}>
-              <MaterialCommunityIcons name="logout" size={40} color={colors.error} />
+              <View style={styles.modalIconBox}>
+                <MaterialCommunityIcons name="logout-variant" size={32} color={colors.primary} />
+              </View>
               <Text style={styles.modalTitle}>Confirm Logout</Text>
+              <Text style={styles.modalSubtitle}>Are you sure you want to log out of your account?</Text>
             </View>
 
             {/* Modal Body */}
             <View style={styles.modalBody}>
-              <Text style={styles.modalMessage}>Are you sure you want to logout? You&apos;ll need to login again to access your account.</Text>
-              <Text style={styles.modalUserInfo}>{profile.email}</Text>
+              <Text style={styles.modalMessage}>
+                You&apos;ll need to log in again to access your RitzYard dashboard.
+              </Text>
             </View>
 
             {/* Modal Actions */}
@@ -382,7 +437,7 @@ export default function ProfileScreen() {
                 style={styles.logoutConfirmButton}
                 onPress={handleLogout}
               >
-                <MaterialCommunityIcons name="logout" size={16} color="#ffffff" />
+                <MaterialCommunityIcons name="logout-variant" size={18} color="#ffffff" />
                 <Text style={styles.logoutConfirmText}>Logout</Text>
               </TouchableOpacity>
             </View>
@@ -460,6 +515,56 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    marginBottom: 4,
+    marginTop: 10,
+  },
+  businessLogoContainer: {
+    marginTop: 15,
+    position: 'relative',
+  },
+  businessLogo: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: '#fff',
+  },
+  editBusinessButton: {
+    position: 'absolute',
+    bottom: -5,
+    right: -5,
+    width: 20,
+    height: 20,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  addBusinessLogoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: colors.accent,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 6,
+  },
+  addLogoText: {
+    fontSize: 11,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 12,
     marginBottom: 4,
   },
   roleText: {
@@ -702,5 +807,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#ffffff',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.accent,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  modalIconBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: 'rgba(193, 87, 56, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    color: colors.textLight,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });

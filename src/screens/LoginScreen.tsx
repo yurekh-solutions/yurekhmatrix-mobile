@@ -25,7 +25,7 @@ import { useAuth } from '../contexts/AuthContext';
 const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen({ navigation, onLoginSuccess }: any) {
-  const { login } = useAuth();
+  const { login: authLogin } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -139,9 +139,9 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
     try {
       if (isLogin) {
         const response = await buyerLogin(email, password);
-        if (response.success && response.token) {
-          await AsyncStorage.setItem('userToken', response.token);
-          await AsyncStorage.setItem('user', JSON.stringify(response.user));
+        if (response.success && response.token && response.user) {
+          // Use AuthContext login to persist session
+          await authLogin(response.token, response.user);
           
           setSuccessMessage('Welcome back! Login successful');
           setShowSuccess(true);
