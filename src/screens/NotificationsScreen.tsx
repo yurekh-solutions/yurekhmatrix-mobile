@@ -109,7 +109,7 @@ export default function NotificationsScreen() {
               setting={{
                 label: 'New Products',
                 description: 'Notify about new products in your categories',
-                icon: 'package-multiple',
+                icon: 'view-grid-outline',
               }}
               value={notifications.newProducts}
             />

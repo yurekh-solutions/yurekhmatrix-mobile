@@ -20,8 +20,6 @@ import { buyerLogin, buyerRegister } from '../lib/api';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 
-const { width, height } = Dimensions.get('window');
-
 // Design System Colors - Match HomeScreen
 const COLORS = {
   primary: '#c15738',
@@ -171,7 +169,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
           Alert.alert('Registration Failed', response.message || 'Could not create account');
         }
       }
-    } catch (error) {
+    } catch (err) {
       Alert.alert('Error', 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -215,20 +213,38 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
           {/* Toggle Tabs */}
           <View style={styles.tabContainer}>
             <TouchableOpacity
-              style={[styles.tab, isLogin && styles.tabActive]}
+              style={styles.tab}
               onPress={() => setIsLogin(true)}
             >
-              <Text style={[styles.tabText, isLogin && styles.tabTextActive]}>
-                Sign In
-              </Text>
+              {isLogin ? (
+                <LinearGradient
+                  colors={[COLORS.primary, COLORS.primaryLight]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.tabGradient}
+                >
+                  <Text style={styles.tabTextActive}>Sign In</Text>
+                </LinearGradient>
+              ) : (
+                <Text style={styles.tabText}>Sign In</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.tab, !isLogin && styles.tabActive]}
+              style={styles.tab}
               onPress={() => setIsLogin(false)}
             >
-              <Text style={[styles.tabText, !isLogin && styles.tabTextActive]}>
-                Sign Up
-              </Text>
+              {!isLogin ? (
+                <LinearGradient
+                  colors={[COLORS.primary, COLORS.primaryLight]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.tabGradient}
+                >
+                  <Text style={styles.tabTextActive}>Sign Up</Text>
+                </LinearGradient>
+              ) : (
+                <Text style={styles.tabText}>Sign Up</Text>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -246,7 +262,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
                   ) : (
                     <View style={styles.logoPlaceholder}>
                       <Ionicons name="briefcase-outline" size={32} color={COLORS.primary} />
-                      <Text style={styles.uploadText}>Add Company Logo</Text>
+                      <Text style={styles.uploadText}>Add  Logo</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -463,12 +479,18 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    height: 48,
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 8,
+    overflow: 'hidden',
   },
-  tabActive: {
-    backgroundColor: COLORS.secondary,
+  tabGradient: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
   },
   tabText: {
     fontSize: 15,
@@ -476,7 +498,9 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
   },
   tabTextActive: {
-    color: COLORS.primary,
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.white,
   },
   formCard: {
     backgroundColor: COLORS.white,

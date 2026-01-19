@@ -25,7 +25,7 @@ interface CustomDrawerProps {
 const drawerItems: DrawerItem[] = [
   // Main Features
   { label: 'Home', icon: 'home', route: 'Home', section: 'Main' },
-  { label: 'Products', icon: 'package-multiple', route: 'Products' },
+  { label: 'Products', icon: 'view-grid-outline', route: 'Products' },
   { label: 'RFQ', icon: 'file-document-outline', route: 'RFQ' },
   { label: 'Material Inquiry', icon: 'comment-multiple-outline', route: 'MaterialInquiry' },
   { label: 'Milo AI', icon: 'robot', route: 'MiloAI' },

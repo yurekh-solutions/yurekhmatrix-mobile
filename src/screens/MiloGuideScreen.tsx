@@ -89,7 +89,7 @@ const guides: Guide[] = [
     id: '6',
     title: 'Managing Orders',
     description: 'Track and manage your orders efficiently',
-    icon: 'package-multiple',
+    icon: 'view-grid-outline',
     steps: [
       'Place order from quote',
       'Track shipment status',

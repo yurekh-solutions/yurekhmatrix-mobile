@@ -342,10 +342,10 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 16,
-    marginBottom: 8,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    marginBottom: 0,
   },
   headerRow: {
     flexDirection: 'row',
@@ -383,13 +383,13 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginHorizontal: 16,
-    marginVertical: 12,
+    marginVertical: 6,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.card,
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -400,11 +400,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featuredSection: {
-    marginVertical: 12,
+    marginVertical: 6,
   },
   featuredList: {
     paddingHorizontal: 16,
-    gap: 12,
+    gap: 8,
   },
   featuredCard: {
     width: width - 32,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   categoriesContainer: {
-    marginVertical: 8,
+    marginVertical: 4,
     paddingLeft: 16,
   },
   categoriesList: {
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   },
   resultsInfo: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   resultsText: {
     fontSize: 12,
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   },
   blogsList: {
     paddingHorizontal: 16,
-    gap: 12,
+    gap: 8,
   },
   blogCard: {
     borderRadius: 10,
@@ -635,10 +635,10 @@ const styles = StyleSheet.create({
   },
   newsletterSection: {
     marginHorizontal: 16,
-    marginVertical: 20,
+    marginVertical: 10,
     backgroundColor: colors.accent,
     borderRadius: 10,
-    paddingVertical: 20,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: 'center',
     borderWidth: 1,

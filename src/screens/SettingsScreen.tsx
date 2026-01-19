@@ -82,7 +82,7 @@ export default function SettingsScreen() {
         {
           id: 'pushNotifications',
           label: 'Push Notifications',
-          icon: 'phone-notification',
+          icon: 'cellphone-message',
           type: 'toggle',
           value: settings.pushNotifications,
         },
@@ -139,7 +139,7 @@ export default function SettingsScreen() {
         {
           id: 'darkMode',
           label: 'Dark Mode',
-          icon: 'moon',
+          icon: 'weather-night',
           type: 'toggle',
           value: settings.darkMode,
         },

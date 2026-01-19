@@ -11,6 +11,7 @@ interface User {
   role?: string;
   avatar?: string;
   profilePicture?: string;
+  businessImage?: string;
   location?: string;
   memberSince?: string;
   totalRFQs?: number;

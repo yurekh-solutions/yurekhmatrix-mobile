@@ -173,7 +173,7 @@ export interface Product {
   name: string;
   category: string;
   description: string;
-  image: string;
+  image: string | number | { uri: string } | any;
   applications: string[];
   features: string[];
   specifications?: {

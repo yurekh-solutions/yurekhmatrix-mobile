@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { colors } from '@/src/styles/colors';
 
 interface Discovery {
@@ -96,6 +97,7 @@ const discoveries: Discovery[] = [
 
 export default function DiscoverScreen() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const router = useRouter();
 
   const DiscoveryCard = ({ discovery }: { discovery: Discovery }) => {
     const isExpanded = expandedId === discovery.id;
@@ -169,11 +171,19 @@ export default function DiscoverScreen() {
           <Text style={styles.ctaTitle}>Ready to optimize your procurement?</Text>
           <Text style={styles.ctaSubtitle}>Start with an RFQ or explore our product catalog</Text>
           <View style={styles.ctaButtons}>
-            <TouchableOpacity style={styles.primaryButton}>
+            <TouchableOpacity 
+              style={styles.primaryButton}
+              onPress={() => router.push('/(tabs)/material')}
+              activeOpacity={0.85}
+            >
               <MaterialCommunityIcons name="file-document-outline" size={16} color="#fff" />
               <Text style={styles.primaryButtonText}>Create RFQ</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryButton}>
+            <TouchableOpacity 
+              style={styles.secondaryButton}
+              onPress={() => router.push('/(tabs)/products')}
+              activeOpacity={0.85}
+            >
               <MaterialCommunityIcons name="magnify" size={16} color={colors.primary} />
               <Text style={styles.secondaryButtonText}>Browse Products</Text>
             </TouchableOpacity>
@@ -195,9 +205,9 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 16,
-    marginBottom: 8,
+    paddingTop: 16,
+    paddingBottom: 8,
+    marginBottom: 0,
   },
   mainTitle: {
     fontSize: 28,
@@ -211,10 +221,10 @@ const styles = StyleSheet.create({
   },
   heroSection: {
     marginHorizontal: 16,
-    marginVertical: 12,
+    marginVertical: 6,
     backgroundColor: colors.accent,
     borderRadius: 10,
-    paddingVertical: 20,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: 'center',
     borderWidth: 1,
@@ -242,8 +252,8 @@ const styles = StyleSheet.create({
   },
   cardsContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 10,
+    paddingVertical: 6,
+    gap: 8,
   },
   card: {
     backgroundColor: colors.card,

@@ -9,11 +9,13 @@ import {
   TextInput,
   ActivityIndicator,
   Dimensions,
+  Linking,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/src/styles/colors';
 
 const { width } = Dimensions.get('window');
+const WHATSAPP_NUMBER = '+919136242706';
 
 interface FAQItem {
   id: string;
@@ -51,9 +53,9 @@ export default function HelpCenterScreen() {
       // TODO: Fetch from backend API
       // For now, using fallback data
       const defaultTopics: HelpTopic[] = [
-        { icon: 'account-help-outline', title: 'Account & Login', description: 'Help with account setup and login issues', color: colors.primary },
+        { icon: 'account-question', title: 'Account & Login', description: 'Help with account setup and login issues', color: colors.primary },
         { icon: 'file-document-outline', title: 'RFQ & Orders', description: 'Learn how to create and manage RFQs', color: colors.secondary },
-        { icon: 'package-multiple', title: 'Products', description: 'Browse and search for materials', color: colors.success },
+        { icon: 'view-grid-outline', title: 'Products', description: 'Browse and search for materials', color: colors.success },
         { icon: 'credit-card-outline', title: 'Payments', description: 'Payment methods and billing issues', color: colors.warning },
         { icon: 'truck-delivery-outline', title: 'Shipping', description: 'Delivery tracking and shipping info', color: colors.info },
         { icon: 'shield-check-outline', title: 'Security', description: 'Account security and privacy', color: colors.error },
@@ -242,8 +244,16 @@ export default function HelpCenterScreen() {
           <MaterialCommunityIcons name="headset" size={32} color={colors.primary} />
           <Text style={styles.supportTitle}>Still need help?</Text>
           <Text style={styles.supportSubtitle}>Our support team is ready to assist</Text>
-          <TouchableOpacity style={styles.contactButton}>
-            <Text style={styles.contactButtonText}>Contact Support</Text>
+          <TouchableOpacity 
+            style={styles.whatsappButton}
+            onPress={() => {
+              const message = encodeURIComponent('Hi RitzYard Support, I need help with...');
+              Linking.openURL(`whatsapp://send?phone=${WHATSAPP_NUMBER}&text=${message}`);
+            }}
+            activeOpacity={0.85}
+          >
+            <MaterialCommunityIcons name="whatsapp" size={18} color="#fff" />
+            <Text style={styles.whatsappButtonText}>Contact Support</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -262,9 +272,9 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 12,
-    marginBottom: 4,
+    paddingTop: 16,
+    paddingBottom: 8,
+    marginBottom: 0,
   },
   title: {
     fontSize: 28,
@@ -278,13 +288,13 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginHorizontal: 16,
-    marginVertical: 8,
+    marginVertical: 4,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.card,
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -458,5 +468,24 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontWeight: '600',
+  },
+  whatsappButton: {
+    backgroundColor: '#25D366',
+    borderRadius: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    shadowColor: '#25D366',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  whatsappButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -20,8 +20,11 @@ import { getProducts } from '../lib/api';
 import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 2;
+const { width, height } = Dimensions.get('window');
+const isSmallScreen = width < 360;
+const isMediumScreen = width >= 360 && width < 400;
+const CARD_WIDTH = width * 0.44; // 44% of screen width for perfect spacing
+const CARD_HEIGHT = CARD_WIDTH * 1.15; // Maintain aspect ratio
 
 // Design System Colors
 const COLORS = {
@@ -70,12 +73,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartCount, setCartCount] = useState(0);
+  const featuredScrollRef = useRef<ScrollView>(null);
+  const scrollPosition = useRef(0);
+  const autoScrollInterval = useRef<any>(null);
 
   const categories: Category[] = [
-    { id: '1', name: 'Mild Steel', icon: 'hammer', color: '#c15738', value: 'mild-steel' },
-    { id: '2', name: 'Stainless', icon: 'water-check', color: '#4ECDC4', value: 'stainless-steel' },
-    { id: '3', name: 'Constructio', icon: 'home-city', color: '#FFB84D', value: 'construction' },
-    { id: '4', name: 'Electrical', icon: 'lightning-bolt', color: '#9B59B6', value: 'electrical' },
+    { id: '1', name: 'Mild Steel', icon: 'iron', color: '#c15738', value: 'mild-steel' },
+    { id: '2', name: 'Stainless', icon: 'shield-star', color: '#4ECDC4', value: 'stainless-steel' },
+    { id: '3', name: 'Construction', icon: 'office-building-cog', color: '#FFB84D', value: 'construction' },
+    { id: '4', name: 'Electrical', icon: 'flash-triangle', color: '#9B59B6', value: 'electrical' },
   ];
 
   useEffect(() => {
@@ -102,6 +108,42 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   useEffect(() => {
     filterProducts();
   }, [searchQuery, selectedCategory, products]);
+
+  // Auto-scroll featured products
+  useEffect(() => {
+    if (products.length > 0 && featuredScrollRef.current) {
+      // Clear any existing interval
+      if (autoScrollInterval.current) {
+        clearInterval(autoScrollInterval.current);
+      }
+
+      // Start auto-scroll every 3 seconds
+      autoScrollInterval.current = setInterval(() => {
+        const featuredProducts = products.slice(0, 6);
+        const cardWidth = width * (isSmallScreen ? 0.75 : 0.7) + 4; // card width + gap
+        const maxScroll = cardWidth * featuredProducts.length;
+        
+        scrollPosition.current += cardWidth;
+        
+        // Loop back to start when reaching the end
+        if (scrollPosition.current >= maxScroll - width) {
+          scrollPosition.current = 0;
+        }
+        
+        featuredScrollRef.current?.scrollTo({
+          x: scrollPosition.current,
+          animated: true,
+        });
+      }, 3000) as any; // Change slide every 3 seconds
+
+      // Cleanup on unmount
+      return () => {
+        if (autoScrollInterval.current) {
+          clearInterval(autoScrollInterval.current);
+        }
+      };
+    }
+  }, [products]);
 
   const loadProducts = async () => {
     try {
@@ -141,21 +183,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         selectedCategory === category.value && styles.categoryButtonActive,
       ]}
     >
-      <View
+      <LinearGradient
+        colors={
+          selectedCategory === category.value
+            ? [category.color + 'E0', category.color + 'B0']
+            : [category.color + '15', category.color + '08']
+        }
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={[
           styles.categoryIconBox,
-          { backgroundColor: category.color + '20' },
-          selectedCategory === category.value && {
-            backgroundColor: category.color + '40',
-          },
+          selectedCategory === category.value && styles.categoryIconBoxActive,
         ]}
       >
+        {selectedCategory === category.value && (
+          <View style={styles.categoryGlowEffect} />
+        )}
         <MaterialCommunityIcons
           name={category.icon as any}
-          size={24}
-          color={category.color}
+          size={28}
+          color={selectedCategory === category.value ? '#FFFFFF' : category.color}
         />
-      </View>
+      </LinearGradient>
       <Text
         style={[
           styles.categoryButtonText,
@@ -396,10 +445,44 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </View>
   
               <ScrollView
+                ref={featuredScrollRef}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.featuredScroll}
                 scrollEventThrottle={16}
+                onScrollBeginDrag={() => {
+                  // Pause auto-scroll when user manually scrolls
+                  if (autoScrollInterval.current) {
+                    clearInterval(autoScrollInterval.current);
+                  }
+                }}
+                onScrollEndDrag={(event) => {
+                  // Update current position and restart auto-scroll
+                  scrollPosition.current = event.nativeEvent.contentOffset.x;
+                  
+                  // Restart auto-scroll after 2 seconds of no interaction
+                  setTimeout(() => {
+                    if (autoScrollInterval.current) {
+                      clearInterval(autoScrollInterval.current);
+                    }
+                    autoScrollInterval.current = setInterval(() => {
+                      const featuredProducts = products.slice(0, 6);
+                      const cardWidth = width * (isSmallScreen ? 0.75 : 0.7) + 4;
+                      const maxScroll = cardWidth * featuredProducts.length;
+                      
+                      scrollPosition.current += cardWidth;
+                      
+                      if (scrollPosition.current >= maxScroll - width) {
+                        scrollPosition.current = 0;
+                      }
+                      
+                      featuredScrollRef.current?.scrollTo({
+                        x: scrollPosition.current,
+                        animated: true,
+                      });
+                    }, 3000) as any;
+                  }, 2000);
+                }}
               >
                 {products.slice(0, 6).map((item, idx) => (
                   <TouchableOpacity
@@ -507,7 +590,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 20,
     gap: 12,
   },
 
@@ -586,7 +669,7 @@ const styles = StyleSheet.create({
   // Search
   searchSection: {
     paddingHorizontal: 0,
-    paddingVertical: 10,
+    paddingVertical: 15,
     gap: 0,
   },
 
@@ -622,14 +705,14 @@ const styles = StyleSheet.create({
 
   // Scroll Content
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 60,
   },
 
   // Banner Section
   bannerSection: {
     paddingHorizontal: 20,
-    marginBottom: 20,
-    marginTop: 8,
+    marginBottom: 24,
+    marginTop: 10,
   },
 
   bannerContainer: {
@@ -770,8 +853,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 12,
+    marginTop: 28,
+    marginBottom: 16,
   },
 
   sectionTitle: {
@@ -788,28 +871,29 @@ const styles = StyleSheet.create({
 
   // Featured
   featuredScroll: {
-    paddingHorizontal: 20,
-    gap: 12,
+    paddingHorizontal: 4,
+    gap: 4,
   },
 
   featuredCard: {
-    width: 180,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    width: width * (isSmallScreen ? 0.75 : 0.7),
+    minHeight: width * 0.95,
+    borderRadius: isSmallScreen ? 16 : 20,
+    backgroundColor: 'rgb(248, 245, 241)',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.15)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
-    minHeight: 320,
+    borderColor: 'rgba(193, 87, 56, 0.12)',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 6,
   },
 
   categoryBadgeContainer: {
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingTop: 8,
+    paddingBottom: 4,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
@@ -835,7 +919,7 @@ const styles = StyleSheet.create({
 
   featuredImageContainer: {
     width: '100%',
-    height: 140,
+    height: 160,
     backgroundColor: COLORS.secondary,
     borderBottomWidth: 0,
     borderTopLeftRadius: 14,
@@ -862,6 +946,7 @@ const styles = StyleSheet.create({
 
   featuredInfo: {
     padding: 12,
+    paddingBottom: 12,
     gap: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     flex: 1,
@@ -893,7 +978,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: COLORS.primary,
     borderWidth: 0,
-    marginTop: 6,
+    marginTop: 8,
+    marginBottom: 0,
     justifyContent: 'center',
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
@@ -923,8 +1009,9 @@ const styles = StyleSheet.create({
 
   // Categories
   categoriesScroll: {
+    
     paddingHorizontal: 20,
-    gap: 12,
+    gap: 16,
   },
 
   categoryButton: {
@@ -938,11 +1025,37 @@ const styles = StyleSheet.create({
   },
 
   categoryIconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
+    width: isSmallScreen ? 56 : 68,
+    height: isSmallScreen ? 56 : 68,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+    // Glassmorphism backdrop
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+  },
+
+  categoryIconBoxActive: {
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    transform: [{ scale: 1.05 }],
+  },
+
+  categoryGlowEffect: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
 
   categoryButtonText: {
@@ -962,8 +1075,8 @@ const styles = StyleSheet.create({
   columnWrapper: {
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    gap: 12,
-    marginBottom: 12,
+    gap: 16,
+    marginBottom: 20,
   },
 
   gridContent: {
@@ -972,25 +1085,25 @@ const styles = StyleSheet.create({
 
   productCard: {
     width: CARD_WIDTH,
-    borderRadius: 14,
+    minHeight: CARD_HEIGHT,
+    borderRadius: isSmallScreen ? 12 : 16,
     overflow: 'hidden',
-    backgroundColor: COLORS.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.15)',
-    shadowColor: '#000',
+    borderColor: 'rgba(193, 87, 56, 0.1)',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
 
   productImageContainer: {
     width: '100%',
     height: CARD_WIDTH,
-    backgroundColor: COLORS.secondary,
+    backgroundColor: 'rgba(245, 237, 227, 0.4)',
     position: 'relative',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(193, 87, 56, 0.12)',
+    overflow: 'hidden',
   },
 
   productImage: {

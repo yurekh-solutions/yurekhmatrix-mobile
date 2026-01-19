@@ -20,7 +20,9 @@ import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 52) / 2;
+const isSmallScreen = width < 360;
+const CARD_WIDTH = width * 0.44; // 44% of screen width for perfect spacing
+const CARD_HEIGHT = CARD_WIDTH * 1.15; // Maintain aspect ratio
 
 // Design System Colors
 const COLORS = {
@@ -67,10 +69,10 @@ export default function ProductsScreen({ navigation }: any) {
   const [cartCount, setCartCount] = useState(0);
 
   const categories: Category[] = [
-    { id: '1', name: 'Mild Steel', icon: 'hammer', color: '#c15738', value: 'mild-steel' },
-    { id: '2', name: 'Stainless', icon: 'water-check', color: '#4ECDC4', value: 'stainless-steel' },
-    { id: '3', name: 'Construction', icon: 'home-city', color: '#FFB84D', value: 'construction' },
-    { id: '4', name: 'Electrical', icon: 'lightning-bolt', color: '#9B59B6', value: 'electrical' },
+    { id: '1', name: 'Mild Steel', icon: 'iron', color: '#c15738', value: 'mild-steel' },
+    { id: '2', name: 'Stainless', icon: 'shield-star', color: '#4ECDC4', value: 'stainless-steel' },
+    { id: '3', name: 'Construction', icon: 'office-building-cog', color: '#FFB84D', value: 'construction' },
+    { id: '4', name: 'Electrical', icon: 'flash-triangle', color: '#9B59B6', value: 'electrical' },
   ];
 
   useEffect(() => {
@@ -85,19 +87,6 @@ export default function ProductsScreen({ navigation }: any) {
     }, [])
   );
 
-  const loadCartCount = async () => {
-    try {
-      const count = await CartService.getCartCount();
-      setCartCount(count);
-    } catch (error) {
-      console.log('Error loading cart count:', error);
-    }
-  };
-
-  useEffect(() => {
-    filterProducts();
-  }, [searchQuery, selectedCategory, products]);
-
   const loadProducts = async () => {
     try {
       setLoading(true);
@@ -111,7 +100,16 @@ export default function ProductsScreen({ navigation }: any) {
     }
   };
 
-  const filterProducts = () => {
+  const loadCartCount = async () => {
+    try {
+      const count = await CartService.getCartCount();
+      setCartCount(count);
+    } catch (error) {
+      console.log('Error loading cart count:', error);
+    }
+  };
+
+  const filterProducts = React.useCallback(() => {
     let filtered = products;
 
     if (selectedCategory !== 'all') {
@@ -125,7 +123,11 @@ export default function ProductsScreen({ navigation }: any) {
     }
 
     setFilteredProducts(filtered);
-  };
+  }, [products, searchQuery, selectedCategory]);
+
+  useEffect(() => {
+    filterProducts();
+  }, [filterProducts]);
 
   const trimText = (text: string, wordLimit: number): string => {
     if (!text) return '';
@@ -278,41 +280,43 @@ export default function ProductsScreen({ navigation }: any) {
             <Text style={styles.sectionTitle}>Categories</Text>
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesScroll}
-            scrollEventThrottle={16}
-          >
-            <TouchableOpacity
-              onPress={() => setSelectedCategory('all')}
-              style={[
-                styles.categoryButton,
-                selectedCategory === 'all' && styles.categoryButtonActive,
-              ]}
+          <View style={styles.categoriesContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoriesScroll}
+              scrollEventThrottle={16}
             >
-              <View
+              <TouchableOpacity
+                onPress={() => setSelectedCategory('all')}
                 style={[
-                  styles.categoryIconBox,
-                  { backgroundColor: COLORS.primary + '20' },
-                  selectedCategory === 'all' && {
-                    backgroundColor: COLORS.primary + '40',
-                  },
+                  styles.categoryButton,
+                  selectedCategory === 'all' && styles.categoryButtonActive,
                 ]}
               >
-                <MaterialCommunityIcons name="grid" size={24} color={COLORS.primary} />
-              </View>
-              <Text
-                style={[
-                  styles.categoryButtonText,
-                  selectedCategory === 'all' && styles.categoryButtonTextActive,
-                ]}
-              >
-                All
-              </Text>
-            </TouchableOpacity>
-            {categories.map(renderCategoryButton)}
-          </ScrollView>
+                <View
+                  style={[
+                    styles.categoryIconBox,
+                    { backgroundColor: COLORS.primary + '20' },
+                    selectedCategory === 'all' && {
+                      backgroundColor: COLORS.primary + '40',
+                    },
+                  ]}
+                >
+                  <MaterialCommunityIcons name="grid" size={24} color={COLORS.primary} />
+                </View>
+                <Text
+                  style={[
+                    styles.categoryButtonText,
+                    selectedCategory === 'all' && styles.categoryButtonTextActive,
+                  ]}
+                >
+                  All
+                </Text>
+              </TouchableOpacity>
+              {categories.map(renderCategoryButton)}
+            </ScrollView>
+          </View>
 
           {/* Products List */}
           <View style={styles.sectionHeader}>
@@ -368,7 +372,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
 
   greeting: {
@@ -420,7 +424,7 @@ const styles = StyleSheet.create({
   // Search
   searchSection: {
     paddingHorizontal: 0,
-    paddingVertical: 10,
+    paddingVertical: 15,
     gap: 10,
   },
 
@@ -460,8 +464,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 12,
+    marginTop: 28,
+    marginBottom: 16,
   },
 
   sectionTitle: {
@@ -477,10 +481,14 @@ const styles = StyleSheet.create({
   },
 
   // Categories
+  categoriesContainer: {
+    marginBottom: 8,
+  },
+
   categoriesScroll: {
     paddingHorizontal: 20,
-    paddingBottom: 12,
-    gap: 12,
+    paddingBottom: 16,
+    gap: 16,
   },
 
   categoryButton: {
@@ -492,13 +500,20 @@ const styles = StyleSheet.create({
   categoryButtonActive: {},
 
   categoryIconBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 14,
+    width: isSmallScreen ? 56 : 68,
+    height: isSmallScreen ? 56 : 68,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.2)',
+    borderColor: 'rgba(193, 87, 56, 0.15)',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+    // Premium glassmorphism
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
   },
 
   categoryButtonText: {
@@ -516,15 +531,15 @@ const styles = StyleSheet.create({
 
   // Scroll Content
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 60,
   },
 
   // Products Grid
   columnWrapper: {
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    gap: 12,
-    marginBottom: 12,
+    gap: 16,
+    marginBottom: 20,
   },
 
   gridContent: {
@@ -534,22 +549,23 @@ const styles = StyleSheet.create({
 
   productCard: {
     width: CARD_WIDTH,
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
+    minHeight: CARD_HEIGHT,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: isSmallScreen ? 12 : 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(193, 87, 56, 0.1)',
   },
 
   productImageContainer: {
     width: '100%',
-    height: 140,
-    backgroundColor: COLORS.secondary,
+    height: CARD_WIDTH * 0.85,
+    backgroundColor: 'rgba(245, 237, 227, 0.4)',
     position: 'relative',
     overflow: 'hidden',
   },

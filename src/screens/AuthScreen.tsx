@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SuccessModal } from '../components/SuccessModal';
 import { buyerLogin, buyerRegister } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,16 +30,62 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [phone, setPhone] = useState('');
+  const [profileImage, setProfileImage] = useState<any>(null);
+  const [businessImage, setBusinessImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
+  const pickImage = async (type: 'profile' | 'business') => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission denied. We need access to your photos to update your profile picture.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        if (Platform.OS === 'web') {
+          const response = await fetch(result.assets[0].uri);
+          const blob = await response.blob();
+          if (type === 'profile') {
+            setProfileImage({ uri: result.assets[0].uri, blob });
+          } else {
+            setBusinessImage({ uri: result.assets[0].uri, blob });
+          }
+        } else {
+          if (type === 'profile') {
+            setProfileImage({ uri: result.assets[0].uri });
+          } else {
+            setBusinessImage({ uri: result.assets[0].uri });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      alert('Failed to pick image');
+    }
+  };
+
   const handleAuth = async () => {
     if (!email || !password) {
       alert('Please fill in all required fields');
+      return;
+    }
+
+    if (!isLogin && password !== confirmPassword) {
+      alert('Passwords do not match');
       return;
     }
 
@@ -67,13 +114,34 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
           return;
         }
 
-        const response = await buyerRegister({
+        console.log('📝 Registration Data:');
+        console.log('  - Name:', name);
+        console.log('  - Email:', email);
+        console.log('  - Company:', company);
+        console.log('  - Phone:', phone);
+        console.log('  - Has Profile Image:', !!profileImage);
+        console.log('  - Has Business Image:', !!businessImage);
+
+        const registrationData: any = {
           name,
           email,
           password,
           company,
           phone,
-        });
+        };
+
+        if (profileImage) {
+          registrationData.profileImage = Platform.OS === 'web' ? profileImage.blob : profileImage.uri;
+          console.log('  - Profile Image Type:', typeof registrationData.profileImage);
+        }
+
+        if (businessImage) {
+          registrationData.businessImage = Platform.OS === 'web' ? businessImage.blob : businessImage.uri;
+          console.log('  - Business Image Type:', typeof registrationData.businessImage);
+        }
+
+        console.log('🚀 Sending registration data...');
+        const response = await buyerRegister(registrationData);
 
         if (response.success) {
           setSuccessMessage('Registration successful! Welcome aboard');
@@ -84,6 +152,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
             setName('');
             setCompany('');
             setPhone('');
+            setProfileImage(null);
+            setConfirmPassword('');
           }, 2000);
         } else {
           alert(response.message || 'Registration failed');
@@ -145,79 +215,152 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               <Text style={styles.formTitle}>
                 {isLogin ? 'Welcome Back' : 'Create Account'}
               </Text>
+              {/* Form Subtitle */}
               <Text style={styles.formSubtitle}>
                 {isLogin ? 'Sign in to continue' : 'Join RitzYard today'}
               </Text>
 
-              {/* Name Field (Signup only) */}
-              {!isLogin && (
-                <View style={styles.inputContainer}>
-                  <Ionicons name="person-outline" size={20} color="#FF6B35" />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Full Name"
-                    value={name}
-                    onChangeText={setName}
-                    placeholderTextColor="#999"
-                  />
+              {!isLogin ? (
+                /* Registration Form */
+                <View>
+                  <View style={styles.imagePickersRow}>
+                    <View style={styles.profileImageSection}>
+                      <Text style={styles.inputLabel}>PROFILE PICTURE</Text>
+                      <TouchableOpacity style={styles.imagePickerContainer} onPress={() => pickImage('profile')}>
+                        {profileImage ? (
+                          <Image source={{ uri: profileImage.uri }} style={styles.selectedImage} />
+                        ) : (
+                          <View style={styles.imagePlaceholder}>
+                            <Ionicons name="camera-outline" size={32} color="#FF6B35" />
+                            <Text style={styles.imagePickerText}>Add Photo</Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.profileImageSection}>
+                      <Text style={styles.inputLabel}>BUSINESS LOGO</Text>
+                      <TouchableOpacity style={styles.imagePickerContainer} onPress={() => pickImage('business')}>
+                        {businessImage ? (
+                          <Image source={{ uri: businessImage.uri }} style={styles.selectedImage} />
+                        ) : (
+                          <View style={styles.imagePlaceholder}>
+                            <Ionicons name="business-outline" size={32} color="#FF6B35" />
+                            <Text style={styles.imagePickerText}>Add Logo</Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <Text style={styles.inputLabel}>FULL NAME</Text>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="person-outline" size={20} color="#FF6B35" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="John Doe"
+                      value={name}
+                      onChangeText={setName}
+                      placeholderTextColor="#A0A0A0"
+                    />
+                  </View>
+
+                  <Text style={styles.inputLabel}>PHONE NUMBER</Text>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="call-outline" size={20} color="#FF6B35" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="+1 (555) 000-0000"
+                      value={phone}
+                      onChangeText={setPhone}
+                      keyboardType="phone-pad"
+                      placeholderTextColor="#A0A0A0"
+                    />
+                  </View>
+
+                  <Text style={styles.inputLabel}>EMAIL</Text>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="mail-outline" size={20} color="#FF6B35" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="you@example.com"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      placeholderTextColor="#A0A0A0"
+                    />
+                  </View>
+
+                  <Text style={styles.inputLabel}>COMPANY NAME</Text>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="business-outline" size={20} color="#FF6B35" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Matrix Corp"
+                      value={company}
+                      onChangeText={setCompany}
+                      placeholderTextColor="#A0A0A0"
+                    />
+                  </View>
+
+                  <Text style={styles.inputLabel}>PASSWORD</Text>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="lock-closed-outline" size={20} color="#FF6B35" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="••••••••"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry
+                      placeholderTextColor="#A0A0A0"
+                    />
+                  </View>
+
+                  <Text style={styles.inputLabel}>CONFIRM PASSWORD</Text>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="lock-closed-outline" size={20} color="#FF6B35" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry
+                      placeholderTextColor="#A0A0A0"
+                    />
+                  </View>
+                </View>
+              ) : (
+                /* Login Form */
+                <View>
+                  <Text style={styles.inputLabel}>EMAIL</Text>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="mail-outline" size={20} color="#FF6B35" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="you@example.com"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      placeholderTextColor="#A0A0A0"
+                    />
+                  </View>
+
+                  <Text style={styles.inputLabel}>PASSWORD</Text>
+                  <View style={styles.inputContainer}>
+                    <Ionicons name="lock-closed-outline" size={20} color="#FF6B35" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="••••••••"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry
+                      placeholderTextColor="#A0A0A0"
+                    />
+                  </View>
                 </View>
               )}
-
-              {/* Email Field */}
-              <View style={styles.inputContainer}>
-                <Ionicons name="mail-outline" size={20} color="#FF6B35" />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  placeholderTextColor="#999"
-                />
-              </View>
-
-              {/* Company Field (Signup only) */}
-              {!isLogin && (
-                <View style={styles.inputContainer}>
-                  <Ionicons name="business-outline" size={20} color="#FF6B35" />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Company Name"
-                    value={company}
-                    onChangeText={setCompany}
-                    placeholderTextColor="#999"
-                  />
-                </View>
-              )}
-
-              {/* Phone Field (Signup only) */}
-              {!isLogin && (
-                <View style={styles.inputContainer}>
-                  <Ionicons name="call-outline" size={20} color="#FF6B35" />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Phone Number"
-                    value={phone}
-                    onChangeText={setPhone}
-                    keyboardType="phone-pad"
-                    placeholderTextColor="#999"
-                  />
-                </View>
-              )}
-
-              {/* Password Field */}
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#FF6B35" />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  placeholderTextColor="#999"
-                />
-              </View>
 
               {/* Forgot Password (Login only) */}
               {isLogin && (
@@ -229,7 +372,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               {/* Submit Button */}
               <TouchableOpacity onPress={handleAuth} disabled={loading}>
                 <LinearGradient
-                  colors={['#FF6B35', '#FF8C42']}
+                  colors={['#8B2E1D', '#5D1A0F']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.submitButton}
@@ -237,9 +380,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                   {loading ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text style={styles.submitText}>
-                      {isLogin ? 'Sign In' : 'Create Account'}
-                    </Text>
+                    <View style={styles.submitButtonContent}>
+                      <Text style={styles.submitText}>
+                        {isLogin ? 'Sign In' : 'Create Account'}
+                      </Text>
+                      <Ionicons name="arrow-forward" size={20} color="#fff" style={{ marginLeft: 8 }} />
+                    </View>
                   )}
                 </LinearGradient>
               </TouchableOpacity>
@@ -310,7 +456,8 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 20,
-    paddingTop: 60,
+    paddingTop: 40,
+    paddingBottom: 80,
   },
   orb: {
     position: 'absolute',
@@ -340,7 +487,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
   },
   logoGradient: {
     width: 80,
@@ -398,18 +545,31 @@ const styles = StyleSheet.create({
   formSubtitle: {
     fontSize: 14,
     color: '#636E72',
-    marginBottom: 30,
+    marginBottom: 20,
     fontFamily: 'Arial',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: '#FAF3E0',
     borderRadius: 15,
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 107, 53, 0.2)',
+    borderColor: 'rgba(139, 46, 29, 0.1)',
+  },
+  inputLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#2D3436',
+    marginBottom: 6,
+    fontFamily: 'Arial',
+    letterSpacing: 1,
+  },
+  submitButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   input: {
     flex: 1,
@@ -493,6 +653,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     fontFamily: 'Arial',
+  },
+  profileImageSection: {
+    alignItems: 'flex-start',
+    marginBottom: 10,
+    flex: 1,
+  },
+  imagePickersRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 12,
+  },
+  imagePickerContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 107, 53, 0.3)',
+    borderStyle: 'dashed',
+    overflow: 'hidden',
+  },
+  selectedImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    alignItems: 'center',
+  },
+  imagePickerText: {
+    fontSize: 10,
+    color: '#FF6B35',
+    marginTop: 4,
+    fontWeight: '600',
   },
   guestButton: {
     flexDirection: 'row',
