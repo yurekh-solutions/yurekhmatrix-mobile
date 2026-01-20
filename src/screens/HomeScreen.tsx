@@ -325,7 +325,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                           style={styles.ctaGradient}
                         >
                           <MaterialCommunityIcons name="arrow-right-circle" size={20} color={COLORS.primary} />
-                          <Text style={styles.ctaButtonText}>Explore Now</Text>
+                          <Text style={styles.ctaButtonText}>View Catalog</Text>
                         </LinearGradient>
                       </TouchableOpacity>
                     </View>

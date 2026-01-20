@@ -339,35 +339,8 @@ export const buyerLogin = async (email: string, password: string): Promise<{ suc
 };
 
 // Buyer registration - for RitzYard mobile app
-export const buyerRegister = async (userData: any): Promise<{ success: boolean; message: string }> => {
+export const buyerRegister = async (userData: any): Promise<{ success: boolean; message: string; token?: string; user?: any }> => {
   try {
-    // TEMPORARY FIX: Register without image first, then upload image separately
-    // This works around the backend FormData parsing issue
-    
-    const registrationData = {
-      name: userData.name,
-      email: userData.email,
-      password: userData.password,
-      phone: userData.phone,
-      company: userData.company,
-    };
-    const response = await fetch(`${API_BASE_URL}/auth/user/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(registrationData),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || 'Registration failed');
-    }
-    return {
-      success: true,
-      message: data.message || 'Registration successful',
-    };
-    
-    /* ORIGINAL CODE WITH IMAGE UPLOAD - WILL BE RE-ENABLED AFTER BACKEND FIX
     // Check if userData contains images (profile or business)
     const hasImages = userData.profileImage || userData.businessImage;
     
@@ -383,9 +356,14 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
       });
 
       // Add profile image to FormData
-      if (userData.profileImage) {  
+      if (userData.profileImage) {
+        console.log('📸 Processing profile image for registration, type:', typeof userData.profileImage);
+        
         // Handle different profileImage formats
-        if (typeof userData.profileImage === 'object' && userData.profileImage.uri) {
+        if (userData.profileImage instanceof Blob) {
+          // Direct blob (from web)
+          formData.append('profileImage', userData.profileImage, `profile-${Date.now()}.jpg`);
+        } else if (typeof userData.profileImage === 'object' && userData.profileImage.uri) {
           // Object with uri (from AuthScreen)
           if (Platform.OS === 'web' && userData.profileImage.blob) {
             // Web: Use blob directly with proper filename
@@ -393,7 +371,7 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
           } else {
             // Mobile: Create proper file object
             const uriParts = userData.profileImage.uri.split('.');
-            const fileType = uriParts[uriParts.length - 1];
+            const fileType = uriParts[uriParts.length - 1] || 'jpg';
             
             formData.append('profileImage', {
               uri: userData.profileImage.uri,
@@ -402,11 +380,14 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
             } as any);
           }
         } else if (typeof userData.profileImage === 'string') {
-          // String URI (direct path)
+          // String URI (direct path from mobile)
+          const uriParts = userData.profileImage.split('.');
+          const fileType = uriParts[uriParts.length - 1] || 'jpg';
+          
           formData.append('profileImage', {
             uri: userData.profileImage,
-            type: 'image/jpeg',
-            name: `profile-${Date.now()}.jpg`,
+            type: `image/${fileType}`,
+            name: `profile-${Date.now()}.${fileType}`,
           } as any);
         }
       }
@@ -414,8 +395,9 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
       // Add business image to FormData
       if (userData.businessImage) {
         // Handle different businessImage formats
-        if (typeof userData.businessImage === 'object' && userData.businessImage.uri) {
-          // Object with uri (from AuthScreen)
+        if (userData.businessImage instanceof Blob) {
+          formData.append('businessImage', userData.businessImage, 'business.jpg');
+        } else if (typeof userData.businessImage === 'object' && userData.businessImage.uri) {
           if (Platform.OS === 'web' && userData.businessImage.blob) {
             formData.append('businessImage', userData.businessImage.blob, 'business.jpg');
           } else {
@@ -426,7 +408,6 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
             } as any);
           }
         } else if (typeof userData.businessImage === 'string') {
-          // String URI (direct path)
           formData.append('businessImage', {
             uri: userData.businessImage,
             type: 'image/jpeg',
@@ -434,22 +415,24 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
           } as any);
         }
       }
-      // Log FormData contents for debugging
-      for (const pair of (formData as any).entries()) {
-      }
       
+      console.log('🚀 Sending registration with image...');
       const response = await fetch(`${API_BASE_URL}/auth/user/signup`, {
         method: 'POST',
         body: formData,
         // DO NOT set Content-Type header - let browser set it automatically with boundary
       });
       const data = await response.json();
+      console.log('📥 Registration response:', data.success ? 'Success' : data.message);
+      
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
       }
       return {
         success: true,
         message: 'Registration successful. Welcome aboard!',
+        token: data.token,
+        user: data.user,
       };
     } else {
       // Normal JSON registration if no image
@@ -470,10 +453,12 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
       return {
         success: true,
         message: 'Registration successful. Welcome aboard!',
+        token: data.token,
+        user: data.user,
       };
     }
-    */
   } catch (error) {
+    console.error('❌ Registration error:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Registration failed',

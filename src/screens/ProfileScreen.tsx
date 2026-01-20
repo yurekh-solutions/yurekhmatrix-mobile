@@ -133,6 +133,8 @@ export default function ProfileScreen() {
   const uploadImage = async (imageUri: string, type: 'profile' | 'business') => {
     try {
       setUploading(true);
+      console.log('🚀 Starting image upload...', { imageUri, type, hasToken: !!token });
+      
       if (!token) {
         Alert.alert('Error', 'Not authenticated');
         return;
@@ -145,10 +147,13 @@ export default function ProfileScreen() {
       if (Platform.OS === 'web') {
         // For Web, we need to convert the URI to a Blob
         try {
+          console.log('🌐 Web platform - fetching blob from URI...');
           const response = await fetch(imageUri);
           const blob = await response.blob();
+          console.log('✅ Blob created:', { size: blob.size, type: blob.type });
           formData.append(fieldName, blob, fileName);
         } catch (webError) {
+          console.error('❌ Blob creation failed:', webError);
           // Fallback if fetch/blob fails
           formData.append(fieldName, {
             uri: imageUri,
@@ -165,6 +170,8 @@ export default function ProfileScreen() {
         } as any);
       }
 
+      console.log('📤 Sending request to:', `${API_BASE_URL}/user/profile`);
+      
       // Use the existing /user/profile PUT endpoint which supports file upload
       const response = await fetch(`${API_BASE_URL}/user/profile`, {
         method: 'PUT',
@@ -175,7 +182,9 @@ export default function ProfileScreen() {
         body: formData,
       });
 
+      console.log('📥 Response status:', response.status);
       const data = await response.json();
+      console.log('📥 Response data:', JSON.stringify(data));
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to upload profile picture');
@@ -183,6 +192,8 @@ export default function ProfileScreen() {
 
       if (data.success) {
         const userUpdate = data.user || data.data;
+        console.log('✅ Upload successful, profileImage:', userUpdate?.profileImage);
+        
         if (type === 'profile' && userUpdate.profileImage) {
           await updateProfilePicture(userUpdate.profileImage);
           setProfile(profile ? { ...profile, profilePicture: userUpdate.profileImage, avatar: userUpdate.profileImage } : null);
@@ -194,6 +205,7 @@ export default function ProfileScreen() {
         Alert.alert('Error', 'Upload completed but image URL missing');
       }
     } catch (error) {
+      console.error('❌ Upload error:', error);
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to upload profile picture');
     } finally {
       setUploading(false);

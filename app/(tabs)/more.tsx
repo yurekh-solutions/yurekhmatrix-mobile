@@ -19,12 +19,9 @@ import AboutScreen from '@/src/screens/AboutScreen';
 import ContactScreen from '@/src/screens/ContactScreen';
 import BlogScreen from '@/src/screens/BlogScreen';
 import HelpCenterScreen from '@/src/screens/HelpCenterScreen';
-import DiscoverScreen from '@/src/screens/DiscoverScreen';
 import FAQScreen from '@/src/screens/FAQScreen';
 import TermsScreen from '@/src/screens/TermsScreen';
 import PrivacyScreen from '@/src/screens/PrivacyScreen';
-import SettingsScreen from '@/src/screens/SettingsScreen';
-import NotificationsScreen from '@/src/screens/NotificationsScreen';
 import MiloAIScreen from '@/src/screens/MiloAIScreen';
 import MiloGuideScreen from '@/src/screens/MiloGuideScreen';
 import CareersScreen from '@/src/screens/CareersScreen';
@@ -35,7 +32,6 @@ type ScreenType =
   | 'contact'
   | 'blog'
   | 'help'
-  | 'discover'
   | 'faq'
   | 'terms'
   | 'privacy'
@@ -135,8 +131,6 @@ export default function MoreScreen() {
         return <BlogScreen />;
       case 'help':
         return <HelpCenterScreen />;
-      case 'discover':
-        return <DiscoverScreen />;
       case 'faq':
         return <FAQScreen />;
       case 'terms':
@@ -187,7 +181,7 @@ export default function MoreScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Explore RitzYard</Text>
+          <Text style={styles.title}>RitzYard</Text>
         </View>
 
         {sections.map((section) => (

@@ -84,17 +84,6 @@ const BottomDrawer: React.FC<BottomDrawerProps> = ({ visible, onClose, navigatio
             },
           },
           {
-            id: 'explore',
-            title: 'Explore',
-            icon: 'compass-outline',
-            description: 'Discover products',
-            color: '#4ECDC4',
-            onPress: () => {
-              if (navigation?.navigate) navigation.navigate('explore');
-              onClose();
-            },
-          },
-          {
             id: 'products',
             title: 'Products',
             icon: 'shopping-outline',
@@ -122,31 +111,6 @@ const BottomDrawer: React.FC<BottomDrawerProps> = ({ visible, onClose, navigatio
               requiresAuth: true,
               onPress: () => {
                 if (navigation?.navigate) navigation.navigate('more');
-                onClose();
-              },
-            },
-            {
-              id: 'settings',
-              title: 'Settings',
-              icon: 'cog-outline',
-              description: 'App preferences',
-              color: COLORS.primary,
-              requiresAuth: true,
-              onPress: () => {
-                if (navigation?.navigate) navigation.navigate('settings');
-                onClose();
-              },
-            },
-            {
-              id: 'notifications',
-              title: 'Notifications',
-              icon: 'bell-outline',
-              description: 'View notifications',
-              color: '#E74C3C',
-              badge: 3,
-              requiresAuth: true,
-              onPress: () => {
-                if (navigation?.navigate) navigation.navigate('notifications');
                 onClose();
               },
             },

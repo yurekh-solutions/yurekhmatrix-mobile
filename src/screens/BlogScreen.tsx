@@ -66,7 +66,7 @@ const mockBlogs: BlogPost[] = [
   {
     id: '4',
     title: 'Sustainability in Procurement: Why It Matters',
-    excerpt: 'Explore how sustainable procurement practices benefit your business and the environment.',
+    excerpt: 'Learn how sustainable procurement practices benefit your business and the environment.',
     image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=80',
     category: 'Sustainability',
     author: 'James Wilson',

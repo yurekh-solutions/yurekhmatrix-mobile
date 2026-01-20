@@ -147,8 +147,9 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
           phone,
         };
 
+        // Pass the complete profileImage object (includes uri and blob for web)
         if (profileImage) {
-          registrationData.profileImage = Platform.OS === 'web' ? profileImage.blob : profileImage.uri;
+          registrationData.profileImage = profileImage;
         }
 
         const response = await buyerRegister(registrationData);
