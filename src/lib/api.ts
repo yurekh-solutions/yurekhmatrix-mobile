@@ -22,7 +22,6 @@ const API_BASE_URL = getApiUrl();
 // Convert local product to backend-compatible format - PRESERVE IMAGES!
 const convertLocalProductToBackend = (product: LocalProduct): any => {
   const imageType = typeof product.image;
-  , '| Image type:', imageType);
   
   return {
     _id: product.id,
@@ -63,8 +62,6 @@ export interface RFQSubmission {
 // Submit Material Inquiry
 export const submitMaterialInquiry = async (inquiryData: any, token?: string): Promise<{ success: boolean; message: string; data?: any }> => {
   try {
-    );
-
     const headers: any = {
       'Content-Type': 'application/json',
     };
@@ -265,7 +262,6 @@ export const getProducts = async (category?: string): Promise<any[]> => {
     });
     
     const mergedProducts = Array.from(productMap.values());
-    :', mergedProducts.length, 'items');
     return mergedProducts;
   } catch (error) {
     // Filter by category if specified
@@ -345,11 +341,8 @@ export const buyerLogin = async (email: string, password: string): Promise<{ suc
 // Buyer registration - for RitzYard mobile app
 export const buyerRegister = async (userData: any): Promise<{ success: boolean; message: string }> => {
   try {
-    );
-    
     // TEMPORARY FIX: Register without image first, then upload image separately
     // This works around the backend FormData parsing issue
-    ');
     
     const registrationData = {
       name: userData.name,
@@ -397,7 +390,6 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
           if (Platform.OS === 'web' && userData.profileImage.blob) {
             // Web: Use blob directly with proper filename
             formData.append('profileImage', userData.profileImage.blob, `profile-${Date.now()}.jpg`);
-            ');
           } else {
             // Mobile: Create proper file object
             const uriParts = userData.profileImage.uri.split('.');
@@ -408,7 +400,6 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
               type: `image/${fileType}`,
               name: `profile-${Date.now()}.${fileType}`,
             } as any);
-            :', userData.profileImage.uri);
           }
         } else if (typeof userData.profileImage === 'string') {
           // String URI (direct path)
@@ -417,7 +408,6 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
             type: 'image/jpeg',
             name: `profile-${Date.now()}.jpg`,
           } as any);
-          :', userData.profileImage);
         }
       }
 
@@ -428,14 +418,12 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
           // Object with uri (from AuthScreen)
           if (Platform.OS === 'web' && userData.businessImage.blob) {
             formData.append('businessImage', userData.businessImage.blob, 'business.jpg');
-            ');
           } else {
             formData.append('businessImage', {
               uri: userData.businessImage.uri,
               type: 'image/jpeg',
               name: 'business.jpg',
             } as any);
-            :', userData.businessImage.uri);
           }
         } else if (typeof userData.businessImage === 'string') {
           // String URI (direct path)
@@ -444,7 +432,6 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
             type: 'image/jpeg',
             name: 'business.jpg',
           } as any);
-          :', userData.businessImage);
         }
       }
       // Log FormData contents for debugging

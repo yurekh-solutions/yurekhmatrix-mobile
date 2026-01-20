@@ -224,7 +224,6 @@ export default function MaterialInquiryScreen() {
         deliveryDate: formData.deliveryDate.trim(),
         additionalRequirements: formData.specifications.trim() || 'None',
       };
-      );
 
       // Submit to backend
       const result = await submitMaterialInquiry(inquiryData);
