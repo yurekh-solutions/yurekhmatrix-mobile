@@ -47,7 +47,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     loadProfileData();
-  }, []);
+  }, [user?.profilePicture, user?.avatar]);
 
   const loadProfileData = async () => {
     try {
@@ -56,7 +56,16 @@ export default function ProfileScreen() {
         // Try to fetch from backend
         const backendProfile = await getBuyerProfile(token);
         if (backendProfile) {
-          setProfile(backendProfile.data || backendProfile);
+          const profileData = backendProfile.data || backendProfile;
+          // Merge backend data with persisted AuthContext user data
+          // AuthContext has the most up-to-date profilePicture from AsyncStorage
+          setProfile({
+            ...profileData,
+            // Map profileImage from backend to profilePicture for consistency
+            profilePicture: user.profilePicture || user.avatar || profileData.profileImage || profileData.profilePicture,
+            avatar: user.profilePicture || user.avatar || profileData.profileImage || profileData.avatar,
+            businessImage: profileData.businessImage || user.businessImage,
+          });
         } else {
           // If profile fetch fails with 401 or null, handle gracefully
           console.warn('Profile fetch returned null, could be unauthorized or network error');
@@ -70,6 +79,7 @@ export default function ProfileScreen() {
             role: user.role || 'Procurement Manager',
             location: user.location || '',
             profilePicture: user.profilePicture || user.avatar,
+            avatar: user.profilePicture || user.avatar,
             businessImage: user.businessImage,
             memberSince: user.memberSince || 'January 2024',
             totalRFQs: user.totalRFQs || 0,
@@ -80,7 +90,7 @@ export default function ProfileScreen() {
       }
     } catch (error) {
       console.error('Error loading profile:', error);
-      // Fallback to auth context user data
+      // Fallback to auth context user data (persisted in AsyncStorage)
       if (user) {
         setProfile({
           id: user.id,
@@ -90,6 +100,7 @@ export default function ProfileScreen() {
           company: user.company || user.companyName,
           role: user.role,
           profilePicture: user.profilePicture || user.avatar,
+          avatar: user.profilePicture || user.avatar,
           businessImage: user.businessImage,
         });
       }
@@ -367,14 +378,14 @@ export default function ProfileScreen() {
           </View>
 
           <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="history" size={18} color={colors.primary} />
-            <Text style={styles.actionButtonText}>Order History</Text>
+            <MaterialCommunityIcons name="file-document-multiple-outline" size={18} color={colors.primary} />
+            <Text style={styles.actionButtonText}>RFQ History</Text>
             <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textLight} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="file-download-outline" size={18} color={colors.primary} />
-            <Text style={styles.actionButtonText}>Download Invoices</Text>
+            <MaterialCommunityIcons name="headset" size={18} color={colors.primary} />
+            <Text style={styles.actionButtonText}>Support</Text>
             <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textLight} />
           </TouchableOpacity>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,9 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import CartService from '@/src/lib/cartService';
-import LottieView from 'lottie-react-native';
 
 const COLORS = {
   primary: '#c15738',
@@ -30,14 +30,11 @@ const COLORS = {
 };
 
 export default function RFQTab() {
-  const route = useRoute();
-  const navigation = useNavigation();
-  const productFromRoute = route.params?.product;
+  const router = useRouter();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   
   // Step 2 - Customer Details
   const [customerName, setCustomerName] = useState('');
@@ -49,30 +46,17 @@ export default function RFQTab() {
   // Cart items from storage
   const [cartItems, setCartItems] = useState<any[]>([]);
 
-  useEffect(() => {
-    loadCartItems();
-  }, []);
+  // Load cart items whenever screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadCartItems();
+    }, [])
+  );
 
   const loadCartItems = async () => {
     try {
       const items = await CartService.getCartItems();
-      
-      // If product passed from route, add it to cart
-      if (productFromRoute) {
-        const newItem = {
-          productId: productFromRoute.id,
-          productName: productFromRoute.name,
-          category: productFromRoute.category,
-          brand: productFromRoute.selectedBrand,
-          grade: productFromRoute.selectedGrade,
-          quantity: productFromRoute.quantity || 1,
-        };
-        
-        const updatedItems = await CartService.addToCart(newItem);
-        setCartItems(updatedItems);
-      } else {
-        setCartItems(items);
-      }
+      setCartItems(items);
     } catch (error) {
       console.log('Error loading cart:', error);
     }
@@ -93,7 +77,6 @@ export default function RFQTab() {
   };
 
   const handleCartItemClick = (index: number) => {
-    setSelectedItemIndex(index);
     setStep(2);
   };
 
@@ -190,38 +173,25 @@ export default function RFQTab() {
 
       const whatsappUrl = `https://wa.me/919136242706?text=${encodeURIComponent(whatsappMessage)}`;
 
-      // Automatically open WhatsApp immediately
+      // Clear cart IMMEDIATELY before opening WhatsApp
+      await CartService.clearCart();
+      setCartItems([]);
+
+      // Show success animation
+      setShowSuccess(true);
+
+      // Open WhatsApp
       Linking.openURL(whatsappUrl).catch(err => {
         console.log('WhatsApp not available:', err);
         Alert.alert('WhatsApp Error', 'Could not open WhatsApp. Please install WhatsApp or manually message +919136242706');
       });
-
-      // Show success animation
-      setShowSuccess(true);
       
+      // Auto close success popup after 4 seconds and navigate home
       setTimeout(() => {
         setShowSuccess(false);
-        
-        Alert.alert(
-          '✅ RFQ Submitted Successfully!',
-          `Your quotation request has been submitted via WhatsApp to +919136242706.\n\nWe'll contact you soon at ${email} or ${phone}.`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Reset form and clear cart
-                resetForm();
-                setTimeout(() => {
-                  navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'index' }],
-                  });
-                }, 500);
-              },
-            },
-          ]
-        );
-      }, 2000);
+        resetForm();
+        router.push('/');
+      }, 4000);
     } catch (outerError) {
       console.log('Unexpected RFQ submission error:', outerError);
       Alert.alert(
@@ -235,7 +205,6 @@ export default function RFQTab() {
 
   const resetForm = () => {
     setStep(1);
-    setSelectedItemIndex(null);
     setCustomerName('');
     setCompanyName('');
     setDeliveryLocation('');
@@ -251,7 +220,7 @@ export default function RFQTab() {
       <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={step === 2 ? () => setStep(1) : () => navigation.goBack()}>
+          <TouchableOpacity onPress={step === 2 ? () => setStep(1) : () => router.back()}>
             <MaterialCommunityIcons
               name={step === 2 ? 'arrow-left' : 'arrow-left'}
               size={28}
@@ -262,13 +231,24 @@ export default function RFQTab() {
           <View style={{ width: 28 }} />
         </View>
 
-        {/* Success Animation Overlay */}
+        {/* Success Popup - Compact Glassmorphism */}
         {showSuccess && (
           <View style={styles.successOverlay}>
             <View style={styles.successCard}>
-              <MaterialCommunityIcons name="check-circle" size={80} color={COLORS.success} />
-              <Text style={styles.successText}>RFQ Submitted!</Text>
-              <Text style={styles.successSubtext}>We'll contact you soon</Text>
+              {/* Success Icon */}
+              <View style={styles.successIconBg}>
+                <MaterialCommunityIcons name="check-circle" size={56} color="#22c55e" />
+              </View>
+              
+              {/* Success Message */}
+              <Text style={styles.successTitle}>RFQ Sent!</Text>
+              <Text style={styles.successSubtitle}>WhatsApp message sent successfully</Text>
+              
+              {/* Quick Info */}
+              <View style={styles.successInfoRow}>
+                <MaterialCommunityIcons name="cart-check" size={18} color={COLORS.primary} />
+                <Text style={styles.successInfoText}>Cart cleared</Text>
+              </View>
             </View>
           </View>
         )}
@@ -301,7 +281,7 @@ export default function RFQTab() {
                   <Text style={styles.emptyCartText}>No items in cart</Text>
                   <TouchableOpacity 
                     style={styles.browseButton}
-                    onPress={() => navigation.navigate('products')}
+                    onPress={() => router.push('/products')}
                   >
                     <Text style={styles.browseButtonText}>Browse Products</Text>
                   </TouchableOpacity>
@@ -355,7 +335,7 @@ export default function RFQTab() {
                   <View style={styles.addMoreSection}>
                     <TouchableOpacity
                       style={styles.addMoreButton}
-                      onPress={() => navigation.navigate('products')}
+                      onPress={() => router.push('/products')}
                     >
                       <MaterialCommunityIcons name="plus-circle" size={20} color={COLORS.primary} />
                       <Text style={styles.addMoreButtonText}>Add More Products</Text>
@@ -461,7 +441,7 @@ export default function RFQTab() {
                 />
               </View>
 
-              <TouchableOpacity style={styles.backToCartButton} onPress={() => { setStep(1); setSelectedItemIndex(null); }}>
+              <TouchableOpacity style={styles.backToCartButton} onPress={() => { setStep(1); }}>
                 <MaterialCommunityIcons name="arrow-left" size={20} color={COLORS.primary} />
                 <Text style={styles.backToCartText}>Back to Cart</Text>
               </TouchableOpacity>
@@ -515,21 +495,60 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
   },
   successCard: {
-    backgroundColor: COLORS.white,
+    width: '80%',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 20,
-    padding: 40,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 20,
-    elevation: 10,
+    elevation: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  successIconBg: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(34, 197, 94, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  successTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#22c55e',
+    marginBottom: 6,
+  },
+  successSubtitle: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  successInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(193, 87, 56, 0.08)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  successInfoText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
   },
   successText: {
     fontSize: 24,

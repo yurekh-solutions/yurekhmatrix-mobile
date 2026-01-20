@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/src/styles/colors';
+import { useAuth } from '@/src/contexts/AuthContext';
+import LoginScreen from '@/src/screens/LoginScreen';
 
 // Import all screens
 import ProfileScreen from '@/src/screens/ProfileScreen';
@@ -45,8 +47,8 @@ type ScreenType =
   | null;
 
 export default function MoreScreen() {
+  const { isAuthenticated } = useAuth();
   const [activeScreen, setActiveScreen] = useState<ScreenType>(null);
-  const [navigationParams, setNavigationParams] = useState<any>(null);
 
   const screenItems = [
     {
@@ -139,16 +141,11 @@ export default function MoreScreen() {
   const sections = [...new Set(screenItems.map((item) => item.section))];
 
   const renderScreen = () => {
-    const navigation = {
-      goBack: () => setActiveScreen(null),
-      navigate: (screen: string, params?: any) => {
-        setNavigationParams(params);
-        setActiveScreen(screen.toLowerCase() as ScreenType);
-      },
-    };
-
     switch (activeScreen) {
       case 'profile':
+        if (!isAuthenticated) {
+          return <LoginScreen onLoginSuccess={() => setActiveScreen(null)} />;
+        }
         return <ProfileScreen />;
       case 'about':
         return <AboutScreen />;
@@ -215,7 +212,6 @@ export default function MoreScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.title}>Explore RitzYard</Text>
-          <Text style={styles.subtitle}>14 screens available</Text>
         </View>
 
         {sections.map((section) => (
@@ -268,8 +264,9 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 8,
+    paddingTop: 24,
+    paddingBottom: 8,
+    marginBottom: 4,
   },
   backButton: {
     padding: 8,

@@ -12,8 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-// import MaskedView from "@react-native-masked-view/masked-view";
-// import LinearGradient from "react-native-linear-gradient";
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getProducts } from '../lib/api';
@@ -66,6 +65,7 @@ interface Category {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -73,9 +73,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartCount, setCartCount] = useState(0);
-  const featuredScrollRef = useRef<ScrollView>(null);
-  const scrollPosition = useRef(0);
-  const autoScrollInterval = useRef<any>(null);
 
   const categories: Category[] = [
     { id: '1', name: 'Mild Steel', icon: 'iron', color: '#c15738', value: 'mild-steel' },
@@ -108,42 +105,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   useEffect(() => {
     filterProducts();
   }, [searchQuery, selectedCategory, products]);
-
-  // Auto-scroll featured products
-  useEffect(() => {
-    if (products.length > 0 && featuredScrollRef.current) {
-      // Clear any existing interval
-      if (autoScrollInterval.current) {
-        clearInterval(autoScrollInterval.current);
-      }
-
-      // Start auto-scroll every 3 seconds
-      autoScrollInterval.current = setInterval(() => {
-        const featuredProducts = products.slice(0, 6);
-        const cardWidth = width * (isSmallScreen ? 0.75 : 0.7) + 4; // card width + gap
-        const maxScroll = cardWidth * featuredProducts.length;
-        
-        scrollPosition.current += cardWidth;
-        
-        // Loop back to start when reaching the end
-        if (scrollPosition.current >= maxScroll - width) {
-          scrollPosition.current = 0;
-        }
-        
-        featuredScrollRef.current?.scrollTo({
-          x: scrollPosition.current,
-          animated: true,
-        });
-      }, 3000) as any; // Change slide every 3 seconds
-
-      // Cleanup on unmount
-      return () => {
-        if (autoScrollInterval.current) {
-          clearInterval(autoScrollInterval.current);
-        }
-      };
-    }
-  }, [products]);
 
   const loadProducts = async () => {
     try {
@@ -224,57 +185,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
     return text;
   };
-  
-  const renderFeaturedCard = (item: Product, idx: number) => {
-    const imageSource = (typeof item.image === 'object' && item.image !== null)
-      ? item.image
-      : (typeof item.image === 'number')
-        ? item.image
-        : (item.image ? { uri: item.image } : null);
-
-    return (
-      <View key={idx} style={styles.featuredCard}>
-        {/* Product Image - FIRST */}
-        <View style={styles.featuredImageContainer}>
-          {imageSource ? (
-            <Image source={imageSource} style={styles.featuredImage} resizeMode="cover" />
-          ) : (
-            <View style={styles.featuredPlaceholder}>
-              <MaterialCommunityIcons name="package-variant" size={48} color={COLORS.border} />
-            </View>
-          )}
-        </View>
-
-        {/* Category Badge - BELOW IMAGE */}
-        <View style={styles.categoryBadgeContainer}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryBadgeText}>{item.category?.replace('-', ' ').toUpperCase()}</Text>
-          </View>
-        </View>
-
-        {/* Product Info */}
-        <View style={styles.featuredInfo}>
-          <Text style={styles.featuredName} numberOfLines={1}>{trimText(item.name, 10)}</Text>
-          {item.description && (
-            <Text style={styles.featuredDescription} numberOfLines={2}>{trimText(item.description, 15)}</Text>
-          )}
-          
-          {/* Add to RFQ Button */}
-          <TouchableOpacity
-            style={styles.addToRfqButton}
-            onPress={() => {
-              // Navigate to product details screen to view full product info
-              setSelectedProduct(item);
-            }}
-            activeOpacity={0.8}
-          >
-            <MaterialCommunityIcons name="cart-plus" size={18} color={COLORS.white} />
-            <Text style={styles.addToRfqText}>Request Quote</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
 
   const renderProductCard = (item: Product) => {
     const imageSource = (typeof item.image === 'object' && item.image !== null)
@@ -330,10 +240,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.cartButton}
                 onPress={() => {
-                  // Navigate to RFQ (cart) with empty state ready
-                  if (navigation && navigation.navigate) {
-                    navigation.navigate('rfq');
-                  }
+                  // Navigate to RFQ (cart) using expo-router
+                  router.push('/rfq');
                 }}
               >
                 <MaterialCommunityIcons name="cart" size={24} color={COLORS.primary} />
@@ -407,10 +315,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                       <TouchableOpacity 
                         style={styles.ctalButton}
                         onPress={() => {
-                          // Navigate to Products tab
-                          if (navigation && navigation.navigate) {
-                            navigation.navigate('products');
-                          }
+                          // Navigate to Products tab using expo-router
+                          router.push('/products');
                         }}
                         activeOpacity={0.85}
                       >
@@ -428,71 +334,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   </View>
                 </LinearGradient>
               </View>
-  
-              {/* Featured Products Section */}
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Featured Products</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    // Navigate to Products tab
-                    if (navigation && navigation.navigate) {
-                      navigation.navigate('products');
-                    }
-                  }}
-                >
-                  <Text style={styles.seeAll}>See All →</Text>
-                </TouchableOpacity>
-              </View>
-  
-              <ScrollView
-                ref={featuredScrollRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.featuredScroll}
-                scrollEventThrottle={16}
-                onScrollBeginDrag={() => {
-                  // Pause auto-scroll when user manually scrolls
-                  if (autoScrollInterval.current) {
-                    clearInterval(autoScrollInterval.current);
-                  }
-                }}
-                onScrollEndDrag={(event) => {
-                  // Update current position and restart auto-scroll
-                  scrollPosition.current = event.nativeEvent.contentOffset.x;
-                  
-                  // Restart auto-scroll after 2 seconds of no interaction
-                  setTimeout(() => {
-                    if (autoScrollInterval.current) {
-                      clearInterval(autoScrollInterval.current);
-                    }
-                    autoScrollInterval.current = setInterval(() => {
-                      const featuredProducts = products.slice(0, 6);
-                      const cardWidth = width * (isSmallScreen ? 0.75 : 0.7) + 4;
-                      const maxScroll = cardWidth * featuredProducts.length;
-                      
-                      scrollPosition.current += cardWidth;
-                      
-                      if (scrollPosition.current >= maxScroll - width) {
-                        scrollPosition.current = 0;
-                      }
-                      
-                      featuredScrollRef.current?.scrollTo({
-                        x: scrollPosition.current,
-                        animated: true,
-                      });
-                    }, 3000) as any;
-                  }, 2000);
-                }}
-              >
-                {products.slice(0, 6).map((item, idx) => (
-                  <TouchableOpacity
-                    key={idx}
-                    onPress={() => setSelectedProduct(item)}
-                  >
-                    {renderFeaturedCard(item, idx)}
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
   
               {/* Categories */}
               <View style={styles.sectionHeader}>
@@ -867,144 +708,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.primary,
     fontWeight: '700',
-  },
-
-  // Featured
-  featuredScroll: {
-    paddingHorizontal: 4,
-    gap: 4,
-  },
-
-  featuredCard: {
-    width: width * (isSmallScreen ? 0.75 : 0.7),
-    minHeight: width * 0.95,
-    borderRadius: isSmallScreen ? 16 : 20,
-    backgroundColor: 'rgb(248, 245, 241)',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.12)',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-
-  categoryBadgeContainer: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 4,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-
-  categoryBadge: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    backgroundColor: 'rgb(234, 206, 195)',
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  categoryBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: COLORS.primary,
-    letterSpacing: 0.5,
-  },
-
-  featuredImageContainer: {
-    width: '100%',
-    height: 160,
-    backgroundColor: COLORS.secondary,
-    borderBottomWidth: 0,
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-    overflow: 'hidden',
-  },
-
-  featuredImage: {
-    width: '100%',
-    height: '100%',
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-  },
-
-  featuredPlaceholder: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.secondary,
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-  },
-
-  featuredInfo: {
-    padding: 12,
-    paddingBottom: 12,
-    gap: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
-
-  featuredName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
-    lineHeight: 16,
-    fontFamily: 'sans-serif',
-  },
-
-  featuredDescription: {
-    fontSize: 11,
-    fontWeight: '400',
-    color: COLORS.textLight,
-    lineHeight: 14,
-    fontFamily: 'sans-serif',
-  },
-
-  addToRfqButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 8,
-    backgroundColor: COLORS.primary,
-    borderWidth: 0,
-    marginTop: 8,
-    marginBottom: 0,
-    justifyContent: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  addToRfqText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.white,
-    fontFamily: 'sans-serif',
-  },
-
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-
-  ratingText: {
-    fontSize: 10,
-    color: COLORS.textLight,
-    fontWeight: '600',
   },
 
   // Categories

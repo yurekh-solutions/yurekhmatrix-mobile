@@ -15,6 +15,7 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { colors } from '@/src/styles/colors';
 import { submitMaterialInquiry } from '@/src/lib/api';
 
@@ -46,7 +47,7 @@ const MATERIAL_TYPES: MaterialType[] = [
   { id: 'other', name: 'Other (Specify below)', icon: 'star-outline', color: '#FFB366' },
 ];
 
-export default function MaterialInquiryScreen({ navigation }: any) {
+export default function MaterialInquiryScreen() {
   const [formData, setFormData] = useState({
     name: '',
     company: '',
@@ -312,7 +313,7 @@ export default function MaterialInquiryScreen({ navigation }: any) {
           {/* Header with Back Button */}
           <View style={styles.header}>
             <View style={styles.headerRow}>
-              <TouchableOpacity onPress={() => navigation?.goBack?.()} style={styles.backBtn}>
+              <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                 <LinearGradient
                   colors={[colors.primary, colors.gradient2 || '#a84a2f']}
                   style={styles.backBtnGradient}
@@ -635,7 +636,7 @@ export default function MaterialInquiryScreen({ navigation }: any) {
                   setFormData({ name: '', company: '', email: '', phone: '', material: '', quantity: '', specifications: '', deliveryDate: '' });
                   setFiles([]);
                   setSelectedMaterialType(null);
-                  navigation?.goBack?.();
+                  router.back();
                 }}
               >
                 <Ionicons name="logo-whatsapp" size={20} color="#fff" />
@@ -649,7 +650,7 @@ export default function MaterialInquiryScreen({ navigation }: any) {
                   setFormData({ name: '', company: '', email: '', phone: '', material: '', quantity: '', specifications: '', deliveryDate: '' });
                   setFiles([]);
                   setSelectedMaterialType(null);
-                  navigation?.goBack?.();
+                  router.back();
                 }}
               >
                 <Text style={styles.doneButtonText}>Done</Text>
@@ -676,9 +677,9 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
-    marginBottom: 16,
+    paddingTop: 24,
+    paddingBottom: 12,
+    marginBottom: 10,
   },
   headerRow: {
     flexDirection: 'row',

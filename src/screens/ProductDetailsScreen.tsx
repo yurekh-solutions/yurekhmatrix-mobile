@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import CartService from '../lib/cartService';
 import { useAuth } from '../contexts/AuthContext';
 import { GuestSignupModal } from '../components/GuestSignupModal';
@@ -63,6 +64,7 @@ interface ProductDetailsScreenProps {
 }
 
 const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({ product, onBack, navigation }) => {
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [selectedBrand, setSelectedBrand] = React.useState<string | null>(null);
   const [selectedGrade, setSelectedGrade] = React.useState<string | null>(null);
@@ -78,8 +80,34 @@ const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({ product, on
       ? product.image
       : (product.image ? { uri: product.image } : null);
 
-  const brands = product.specifications?.brand || [];
-  const grades = product.specifications?.grades || [];
+  // Get brands and grades from product specs, or provide category-based defaults
+  const getDefaultBrands = (category: string): string[] => {
+    const categoryBrands: { [key: string]: string[] } = {
+      'mild-steel': ['JSW Steel', 'Tata Steel', 'SAIL', 'Jindal Steel', 'Essar Steel'],
+      'stainless-steel': ['Jindal Stainless', 'POSCO', 'Outokumpu', 'Acerinox', 'Aperam'],
+      'construction': ['UltraTech', 'ACC', 'Ambuja', 'Shree Cement', 'Dalmia Cement'],
+      'electrical': ['Havells', 'Polycab', 'KEI Industries', 'Finolex', 'RR Kabel'],
+    };
+    return categoryBrands[category] || ['Premium Quality', 'Standard Quality', 'Economy'];
+  };
+
+  const getDefaultGrades = (category: string): string[] => {
+    const categoryGrades: { [key: string]: string[] } = {
+      'mild-steel': ['Fe 500D', 'Fe 550D', 'Grade A', 'Grade B', 'IS 2062'],
+      'stainless-steel': ['304', '316', '316L', '202', '430'],
+      'construction': ['OPC 53', 'OPC 43', 'PPC', 'PSC', 'M25 Grade'],
+      'electrical': ['FRLS', 'FR', 'ZHFR', 'Industrial Grade', 'Commercial Grade'],
+    };
+    return categoryGrades[category] || ['Premium Grade', 'Standard Grade', 'Commercial Grade'];
+  };
+
+  const brands = (product.specifications?.brand && product.specifications.brand.length > 0) 
+    ? product.specifications.brand 
+    : getDefaultBrands(product.category);
+    
+  const grades = (product.specifications?.grades && product.specifications.grades.length > 0) 
+    ? product.specifications.grades 
+    : getDefaultGrades(product.category);
 
   const handleShare = async () => {
     try {
@@ -122,9 +150,10 @@ Available on RitzYard - Smart Material Procurement Platform`;
     }
 
     try {
-      // Create cart item
+      // Create cart item with required fields
       const cartItem = {
-        productId: product.id,
+        id: Date.now().toString(), // Will be overwritten by CartService
+        productId: product.id || '',
         productName: product.name,
         category: product.category,
         brand: selectedBrand,
@@ -159,80 +188,42 @@ Available on RitzYard - Smart Material Procurement Platform`;
   return (
     <View style={styles.container}>
       <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
-              {/* Success Popup - Glass Morphism */}
+              {/* Success Popup - Compact Glass Morphism */}
         {showSuccessPopup && (
           <View style={styles.successPopupOverlay}>
             <View style={styles.successPopupCard}>
-              {/* Success Icon Container */}
-              <LinearGradient
-                colors={['rgba(193, 87, 56, 0.1)', 'rgba(193, 87, 56, 0.05)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.successIconGradient}
-              >
-                <MaterialCommunityIcons name="check-circle" size={72} color={COLORS.primary} />
-              </LinearGradient>
+              {/* Success Icon */}
+              <View style={styles.successIconBg}>
+                <MaterialCommunityIcons name="check-circle" size={52} color="#22c55e" />
+              </View>
               
               {/* Success Message */}
-              <Text style={styles.successPopupTitle}>Successfully Added</Text>
-              <Text style={styles.successPopupSubtitle}>{product.name}</Text>
+              <Text style={styles.successPopupTitle}>Added to Cart!</Text>
               
-              {/* Product Details */}
-              <View style={styles.successPopupDetails}>
-                <View style={styles.detailRow}>
-                  <MaterialCommunityIcons name="factory" size={16} color={COLORS.primary} />
-                  <Text style={styles.detailLabel}>Brand:</Text>
-                  <Text style={styles.detailValue}>{selectedBrand}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <MaterialCommunityIcons name="layers" size={16} color={COLORS.primary} />
-                  <Text style={styles.detailLabel}>Grade:</Text>
-                  <Text style={styles.detailValue}>{selectedGrade}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <MaterialCommunityIcons name="weight-kilogram" size={16} color={COLORS.primary} />
-                  <Text style={styles.detailLabel}>Quantity:</Text>
-                  <Text style={styles.detailValue}>{quantity} MT</Text>
-                </View>
+              {/* Product Info Compact */}
+              <View style={styles.successProductInfo}>
+                <Text style={styles.successProductName} numberOfLines={1}>{product.name}</Text>
+                <Text style={styles.successProductSpec}>{selectedBrand} • {selectedGrade} • {quantity} MT</Text>
               </View>
               
               {/* Action Buttons */}
               <View style={styles.successPopupButtons}>
                 <TouchableOpacity 
                   style={styles.popupButtonSecondary}
-                  onPress={() => {
-                    setShowSuccessPopup(false);
-                  }}
+                  onPress={() => setShowSuccessPopup(false)}
                 >
-                  <Text style={styles.popupButtonSecondaryText}>Continue Browsing</Text>
+                  <Text style={styles.popupButtonSecondaryText}>Continue</Text>
                 </TouchableOpacity>
                 
-                <LinearGradient
-                  colors={['rgba(193, 87, 56, 0.95)', 'rgba(139, 58, 37, 0.95)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.popupButtonPrimaryGradient}
+                <TouchableOpacity 
+                  style={styles.popupButtonPrimary}
+                  onPress={() => {
+                    setShowSuccessPopup(false);
+                    router.push('/rfq');
+                  }}
                 >
-                  <TouchableOpacity 
-                    style={styles.popupButtonPrimary}
-                    onPress={() => {
-                      setShowSuccessPopup(false);
-                      if (navigation && navigation.navigate) {
-                        navigation.navigate('rfq', {
-                          product: {
-                            ...product,
-                            selectedBrand,
-                            selectedGrade,
-                            quantity: parseInt(quantity),
-                          },
-                        });
-                      }
-                    }}
-                  >
-                    <MaterialCommunityIcons name="file-document-edit" size={20} color={COLORS.white} />
-                    <Text style={styles.popupButtonPrimaryText}>Create RFQ</Text>
-                  </TouchableOpacity>
-                </LinearGradient>
+                  <Text style={styles.popupButtonPrimaryText}>Go to RFQ</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -380,32 +371,6 @@ Available on RitzYard - Smart Material Procurement Platform`;
               </View>
             )}
 
-            {/* Brands - Hidden (shown in dropdown) */}
-            {false && product.specifications?.brand && product.specifications.brand.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>🏭 Available Brands</Text>
-                {product.specifications.brand.map((brand, idx) => (
-                  <View key={idx} style={styles.brandItem}>
-                    <MaterialCommunityIcons name="check-circle" size={16} color={COLORS.primary} />
-                    <Text style={styles.brandText}>{brand}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* Grades - Hidden (shown in dropdown) */}
-            {false && product.specifications?.grades && product.specifications.grades.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>⭐ Available Grades</Text>
-                {product.specifications.grades.map((grade, idx) => (
-                  <View key={idx} style={styles.gradeItem}>
-                    <MaterialCommunityIcons name="badge-check" size={16} color={COLORS.primary} />
-                    <Text style={styles.gradeText}>{grade}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
             {/* Request Quote Section */}
             <View style={styles.requestQuoteSection}>
               <View style={styles.quoteSectionHeader}>
@@ -437,7 +402,7 @@ Available on RitzYard - Smart Material Procurement Platform`;
                 >
                   <View style={styles.dropdownList}>
                     <FlatList
-                      data={brands.length > 0 ? brands : ['Standard Brand']}
+                      data={brands}
                       renderItem={({ item }) => (
                         <TouchableOpacity
                           style={[
@@ -489,7 +454,7 @@ Available on RitzYard - Smart Material Procurement Platform`;
                 >
                   <View style={styles.dropdownList}>
                     <FlatList
-                      data={grades.length > 0 ? grades : ['Standard Grade']}
+                      data={grades}
                       renderItem={({ item }) => (
                         <TouchableOpacity
                           style={[
@@ -1046,97 +1011,78 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     zIndex: 1000,
   },
 
   successPopupCard: {
-    width: '88%',
-    paddingVertical: 40,
-    paddingHorizontal: 28,
-    borderRadius: 28,
-    backgroundColor: 'rgba(255, 255, 255, 0.97)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.9)',
+    width: '82%',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.25,
-    shadowRadius: 24,
-    elevation: 28,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 15,
     alignItems: 'center',
   },
 
-  successIconGradient: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  successIconBg: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(34, 197, 94, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
-    borderWidth: 2,
-    borderColor: 'rgba(193, 87, 56, 0.2)',
+    marginBottom: 12,
   },
 
   successPopupTitle: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: COLORS.primary,
-    marginBottom: 8,
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#22c55e',
+    marginBottom: 12,
     fontFamily: 'sans-serif',
   },
 
-  successPopupSubtitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 24,
-    textAlign: 'center',
-    fontFamily: 'sans-serif',
-  },
-
-  successPopupDetails: {
+  successProductInfo: {
     width: '100%',
     backgroundColor: 'rgba(193, 87, 56, 0.06)',
-    borderRadius: 14,
-    padding: 18,
-    marginBottom: 28,
-    borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.12)',
-  },
-
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    borderRadius: 12,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(193, 87, 56, 0.1)',
+    paddingHorizontal: 14,
+    marginBottom: 16,
+    alignItems: 'center',
   },
 
-  detailLabel: {
-    fontSize: 13,
+  successProductName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+
+  successProductSpec: {
+    fontSize: 12,
     fontWeight: '600',
     color: COLORS.textLight,
-    fontFamily: 'sans-serif',
-    minWidth: 70,
-  },
-
-  detailValue: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primary,
-    fontFamily: 'sans-serif',
   },
 
   successPopupButtons: {
     width: '100%',
-    gap: 14,
+    flexDirection: 'row',
+    gap: 10,
   },
 
   popupButtonSecondary: {
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    borderRadius: 12,
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
     backgroundColor: 'rgba(193, 87, 56, 0.08)',
     borderWidth: 1.5,
     borderColor: COLORS.primary,
@@ -1145,29 +1091,23 @@ const styles = StyleSheet.create({
   },
 
   popupButtonSecondaryText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.primary,
     fontFamily: 'sans-serif',
   },
 
-  popupButtonPrimaryGradient: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-
   popupButtonPrimary: {
-    flexDirection: 'row',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    borderRadius: 12,
-    justifyContent: 'center',
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'center',
   },
 
   popupButtonPrimaryText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.white,
     fontFamily: 'sans-serif',

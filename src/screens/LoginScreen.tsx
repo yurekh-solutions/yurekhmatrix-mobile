@@ -40,6 +40,8 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [phone, setPhone] = useState('');
@@ -342,9 +344,16 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
                   placeholder="••••••••"
                   value={password}
                   onChangeText={setPassword}
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                   placeholderTextColor={COLORS.textLight}
                 />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons 
+                    name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                    size={20} 
+                    color={COLORS.textLight} 
+                  />
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -359,9 +368,16 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
-                    secureTextEntry
+                    secureTextEntry={!showConfirmPassword}
                     placeholderTextColor={COLORS.textLight}
                   />
+                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    <Ionicons 
+                      name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} 
+                      size={20} 
+                      color={COLORS.textLight} 
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
             )}

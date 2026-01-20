@@ -2,12 +2,12 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { LoginScreen } from '../screens/LoginScreen';
+import LoginScreen from '../screens/LoginScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { SearchScreen } from '../screens/SearchScreen';
-import { RFQScreen } from '../screens/RFQScreen';
-import { MaterialInquiryScreen } from '../screens/MaterialInquiryScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
+import RFQScreen from '../screens/RFQScreen';
+import MaterialInquiryScreen from '../screens/MaterialInquiryScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
