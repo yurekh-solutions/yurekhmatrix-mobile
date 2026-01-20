@@ -214,7 +214,6 @@ Phone: ${rfqData.phone}`;
         Alert.alert('Error', 'Failed to submit RFQ. Please try again.');
       }
     } catch (error) {
-      console.log('RFQ Submission Error:', error);
       Alert.alert('Error', 'Network error. Please check your connection.');
     } finally {
       setLoading(false);

@@ -40,7 +40,6 @@ export const GuestSignupModal: React.FC<GuestSignupModalProps> = ({
         [{ text: 'OK', onPress: onSignup }]
       );
     } catch (error) {
-      console.error('Error during logout:', error);
       Alert.alert('Error', 'Please restart the app to sign up.');
     }
   };

@@ -55,7 +55,6 @@ export default function ContactScreen({ navigation }: any) {
       ];
       setContactDetails(defaultContacts);
     } catch (error) {
-      console.error('Error fetching contact data:', error);
     } finally {
       setLoading(false);
     }

@@ -98,7 +98,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       const count = await CartService.getCartCount();
       setCartCount(count);
     } catch (error) {
-      console.log('Error loading cart count:', error);
     }
   };
 
@@ -112,7 +111,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       const data = await getProducts();
       setProducts(data && data.length > 0 ? data : []);
     } catch (error) {
-      console.error('Error loading products:', error);
       setProducts([]);
     } finally {
       setLoading(false);

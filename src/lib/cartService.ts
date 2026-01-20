@@ -28,7 +28,6 @@ class CartService {
       const data = await AsyncStorage.getItem(CART_STORAGE_KEY);
       return data ? JSON.parse(data) : [];
     } catch (error) {
-      console.log('Error getting cart items:', error);
       return [];
     }
   }
@@ -58,7 +57,6 @@ class CartService {
       
       return items;
     } catch (error) {
-      console.log('Error adding to cart:', error);
       throw error;
     }
   }
@@ -77,7 +75,6 @@ class CartService {
       
       return filtered;
     } catch (error) {
-      console.log('Error removing from cart:', error);
       throw error;
     }
   }
@@ -87,7 +84,6 @@ class CartService {
     try {
       await AsyncStorage.removeItem(CART_STORAGE_KEY);
     } catch (error) {
-      console.log('Error clearing cart:', error);
       throw error;
     }
   }
@@ -121,7 +117,6 @@ class CartService {
 
       return await response.json();
     } catch (error) {
-      console.log('Error submitting RFQ:', error);
       throw error;
     }
   }

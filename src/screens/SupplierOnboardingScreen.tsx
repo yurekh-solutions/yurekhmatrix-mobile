@@ -86,8 +86,6 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
 
     setLoading(true);
     try {
-      console.log('🚀 Submitting to:', `${API_BASE_URL}/supplier/submit`);
-      
       // Create FormData for file upload
       const uploadData = new FormData();
       uploadData.append('companyName', formData.companyName);
@@ -153,12 +151,7 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
         }
       }
 
-      console.log('📦 Form data prepared:', {
-        companyName: formData.companyName,
-        email: formData.email,
-        phone: formData.phone,
-        contactPerson: formData.contactPerson,
-        businessType: formData.businessType.toLowerCase(),
+      ,
         address: JSON.stringify(addressObj),
         productsOffered: JSON.stringify(productsArray),
         yearsInBusiness: formData.yearsInBusiness || '0',
@@ -167,8 +160,7 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
         hasBankProof: !!files.bankProof,
       });
       
-      console.log('📋 Files details:', {
-        pan: files.pan ? { name: files.pan.name, type: files.pan.mimeType, size: files.pan.size, hasFile: !!(files.pan as any).file } : null,
+      .file } : null,
         aadhaar: files.aadhaar ? { name: files.aadhaar.name, type: files.aadhaar.mimeType, size: files.aadhaar.size, hasFile: !!(files.aadhaar as any).file } : null,
         bankProof: files.bankProof ? { name: files.bankProof.name, type: files.bankProof.mimeType, size: files.bankProof.size, hasFile: !!(files.bankProof as any).file } : null,
       });
@@ -180,22 +172,13 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
         },
         body: uploadData,
       });
-
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', response.headers);
-      
       let data;
       try {
         const responseText = await response.text();
-        console.log('📤 Raw response:', responseText);
         data = JSON.parse(responseText);
       } catch (parseError) {
-        console.error('❌ JSON parse error:', parseError);
         throw new Error('Failed to parse server response');
       }
-      
-      console.log('📤 Parsed response:', data);
-
       if (response.ok && data.success) {
         // Show success message then auto-navigate
         Alert.alert(
@@ -239,7 +222,6 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
         );
       }
     } catch (error) {
-      console.error('Error submitting:', error);
       Alert.alert(
         '⚠️ Connection Error',
         'Failed to submit your application. Please check your internet connection and try again.',
@@ -310,12 +292,7 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
 
       if (!result.canceled && result.assets && result.assets[0]) {
         const asset = result.assets[0];
-        console.log('📄 File picked:', {
-          name: asset.name,
-          type: asset.mimeType,
-          size: asset.size,
-          uri: asset.uri,
-          hasFile: !!(asset as any).file,
+        .file,
         });
         
         // For web platform, fetch and convert URI to File object
@@ -338,7 +315,6 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
               },
             }));
           } catch (e) {
-            console.error('Error converting URI to file:', e);
             setFiles(prev => ({ ...prev, [type]: asset }));
           }
         } else {
@@ -347,7 +323,6 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
         }
       }
     } catch (error) {
-      console.error('Error picking document:', error);
       Alert.alert('Error', 'Failed to pick document');
     }
   };

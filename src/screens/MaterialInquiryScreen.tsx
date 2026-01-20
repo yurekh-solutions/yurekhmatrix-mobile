@@ -193,12 +193,6 @@ export default function MaterialInquiryScreen() {
       // Parse quantity safely
       const parsedQuantity = parseFloat(formData.quantity);
       const safeQuantity = (parsedQuantity && parsedQuantity > 0) ? parsedQuantity : 1;
-      
-      console.log('DEBUG: formData.material:', formData.material);
-      console.log('DEBUG: formData.quantity:', formData.quantity);
-      console.log('DEBUG: parsedQuantity:', parsedQuantity);
-      console.log('DEBUG: safeQuantity:', safeQuantity);
-
       // Prepare inquiry data for backend with correct structure
       const material = {
         materialName: formData.material.trim(), // Backend expects 'materialName'
@@ -230,24 +224,15 @@ export default function MaterialInquiryScreen() {
         deliveryDate: formData.deliveryDate.trim(),
         additionalRequirements: formData.specifications.trim() || 'None',
       };
-
-      console.log('Submitting inquiry data:', inquiryData);
-      console.log('Materials array:', JSON.stringify(inquiryData.materials, null, 2));
+      );
 
       // Submit to backend
       const result = await submitMaterialInquiry(inquiryData);
-      console.log('📋 Backend response:', result);
-      console.log('📋 Result success:', result.success);
-      console.log('📋 Result data:', result.data);
-
       setLoading(false);
 
       if (result.success) {
-        console.log('✅ SUCCESS - Showing popup');
         // Extract inquiry number from response
         const inquiryNumber = result.data?.inquiryNumber || 'N/A';
-        console.log('✅ Inquiry Number:', inquiryNumber);
-        
         // Generate formatted WhatsApp message
         let whatsappMessage = `*🔧 Material Inquiry Request*\n`;
         whatsappMessage += `*Inquiry #:* ${inquiryNumber}\n\n`;
@@ -275,12 +260,9 @@ export default function MaterialInquiryScreen() {
           phone: formData.phone,
         });
       } else {
-        console.log('❌ ERROR - Backend returned success: false');
-        console.log('❌ Error message:', result.message);
         Alert.alert('Error', result.message || 'Failed to submit inquiry');
       }
     } catch (error: any) {
-      console.error('❌ Submission error:', error);
       setLoading(false);
       Alert.alert('Error', 'Failed to submit inquiry. Please try again.');
     }

@@ -58,7 +58,7 @@ export default function RFQTab() {
       const items = await CartService.getCartItems();
       setCartItems(items);
     } catch (error) {
-      console.log('Error loading cart:', error);
+      // Silent fail
     }
   };
 
@@ -71,7 +71,7 @@ export default function RFQTab() {
         await CartService.removeFromCart(itemToDelete.id);
       }
     } catch (error) {
-      console.log('Error deleting item:', error);
+      // Silent fail
       Alert.alert('Error', 'Failed to remove item from cart');
     }
   };
@@ -139,11 +139,9 @@ export default function RFQTab() {
 
         if (response.ok) {
           backendSubmitted = true;
-          console.log('RFQ submitted to backend successfully at:', API_URL);
         }
       } catch (backendError: any) {
         // Backend failed - continue with offline mode
-        console.log('Backend unavailable - continuing with WhatsApp submission', backendError?.message || 'Unknown error');
       }
 
       // Build WhatsApp message with all details - Material Requirements FIRST
@@ -182,7 +180,6 @@ export default function RFQTab() {
 
       // Open WhatsApp
       Linking.openURL(whatsappUrl).catch(err => {
-        console.log('WhatsApp not available:', err);
         Alert.alert('WhatsApp Error', 'Could not open WhatsApp. Please install WhatsApp or manually message +919136242706');
       });
       
@@ -193,7 +190,6 @@ export default function RFQTab() {
         router.push('/');
       }, 4000);
     } catch (outerError) {
-      console.log('Unexpected RFQ submission error:', outerError);
       Alert.alert(
         'Error',
         'Something went wrong. Please try again or contact support.'

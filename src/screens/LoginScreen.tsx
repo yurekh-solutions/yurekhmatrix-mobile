@@ -94,14 +94,12 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
           
           setProfileImage({ uri: asset.uri, blob });
         } catch (err) {
-          console.error('Web image processing error:', err);
           Alert.alert('Error', 'Failed to process image. Please try again.');
         }
       } else {
         setProfileImage({ uri: asset.uri });
       }
     } catch (error) {
-      console.error('Image picker error:', error);
       Alert.alert('Error', 'Failed to select image. Please try again.');
     }
   };

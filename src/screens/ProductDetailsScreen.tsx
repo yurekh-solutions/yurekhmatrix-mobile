@@ -177,7 +177,6 @@ Available on RitzYard - Smart Material Procurement Platform`;
         setQuantity('1');
       }, 3000);
     } catch (error) {
-      console.error('Error adding to cart:', error);
       Alert.alert('Error', 'Failed to add item to cart. Please try again.');
     }
   };

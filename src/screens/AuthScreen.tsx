@@ -73,7 +73,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
         }
       }
     } catch (error) {
-      console.error('Error picking image:', error);
       alert('Failed to pick image');
     }
   };
@@ -113,15 +112,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
           setLoading(false);
           return;
         }
-
-        console.log('📝 Registration Data:');
-        console.log('  - Name:', name);
-        console.log('  - Email:', email);
-        console.log('  - Company:', company);
-        console.log('  - Phone:', phone);
-        console.log('  - Has Profile Image:', !!profileImage);
-        console.log('  - Has Business Image:', !!businessImage);
-
         const registrationData: any = {
           name,
           email,
@@ -132,15 +122,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
         if (profileImage) {
           registrationData.profileImage = Platform.OS === 'web' ? profileImage.blob : profileImage.uri;
-          console.log('  - Profile Image Type:', typeof registrationData.profileImage);
         }
 
         if (businessImage) {
           registrationData.businessImage = Platform.OS === 'web' ? businessImage.blob : businessImage.uri;
-          console.log('  - Business Image Type:', typeof registrationData.businessImage);
         }
-
-        console.log('🚀 Sending registration data...');
         const response = await buyerRegister(registrationData);
 
         if (response.success) {

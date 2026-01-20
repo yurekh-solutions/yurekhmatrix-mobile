@@ -50,7 +50,6 @@ export default function FAQScreen() {
         ];
         setFaqItems(defaultFAQs);
       } catch (error) {
-        console.error('Error fetching FAQs:', error);
       } finally {
         setLoading(false);
       }

@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(JSON.parse(storedUser));
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(authToken);
       setUser(userData);
     } catch (error) {
-      console.error('Error saving auth data:', error);
+
       throw error;
     }
   };
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(null);
       setUser(null);
     } catch (error) {
-      console.error('Error during logout:', error);
+
     }
   };
 
@@ -89,7 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(updatedUser);
       }
     } catch (error) {
-      console.error('Error updating user:', error);
+
       throw error;
     }
   };
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(updatedUser);
       }
     } catch (error) {
-      console.error('Error updating profile picture:', error);
+
       throw error;
     }
   };

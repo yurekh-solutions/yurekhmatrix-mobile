@@ -43,7 +43,6 @@ export default function SupplierStatusScreen({ route, navigation }: any) {
         Alert.alert('Error', data.message || 'Application not found');
       }
     } catch (error) {
-      console.error('Error checking status:', error);
       Alert.alert('Error', 'Failed to check status');
     } finally {
       setLoading(false);

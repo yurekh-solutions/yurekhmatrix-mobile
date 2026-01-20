@@ -61,7 +61,6 @@ export default function ProductsListScreen({ navigation, route }: any) {
         setCategories(['All', ...(categoriesData.categories || []).map((c: any) => c.name)]);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
     }
     setLoading(false);
   };

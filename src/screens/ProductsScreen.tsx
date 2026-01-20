@@ -93,7 +93,6 @@ export default function ProductsScreen({ navigation }: any) {
       const data = await getProducts();
       setProducts(data && data.length > 0 ? data : []);
     } catch (error) {
-      console.error('Error loading products:', error);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -105,7 +104,6 @@ export default function ProductsScreen({ navigation }: any) {
       const count = await CartService.getCartCount();
       setCartCount(count);
     } catch (error) {
-      console.log('Error loading cart count:', error);
     }
   };
 
@@ -239,7 +237,6 @@ export default function ProductsScreen({ navigation }: any) {
             style={styles.cartButton}
             onPress={() => {
               // Navigate to cart view - for now show cart count
-              console.log('Cart items:', cartCount);
             }}
           >
             <MaterialCommunityIcons name="cart" size={24} color={COLORS.primary} />

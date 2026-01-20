@@ -68,7 +68,6 @@ export default function ProfileScreen() {
           });
         } else {
           // If profile fetch fails with 401 or null, handle gracefully
-          console.warn('Profile fetch returned null, could be unauthorized or network error');
           // Don't force logout here to allow offline mode with local data
           setProfile({
             id: user.id,
@@ -89,7 +88,6 @@ export default function ProfileScreen() {
         }
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
       // Fallback to auth context user data (persisted in AsyncStorage)
       if (user) {
         setProfile({
@@ -128,7 +126,6 @@ export default function ProfileScreen() {
         uploadImage(result.assets[0].uri, type);
       }
     } catch (error) {
-      console.error('Error picking image:', error);
       Alert.alert('Error', 'Failed to pick image');
     }
   };
@@ -152,7 +149,6 @@ export default function ProfileScreen() {
           const blob = await response.blob();
           formData.append(fieldName, blob, fileName);
         } catch (webError) {
-          console.error('Error converting URI to blob on web:', webError);
           // Fallback if fetch/blob fails
           formData.append(fieldName, {
             uri: imageUri,
@@ -198,7 +194,6 @@ export default function ProfileScreen() {
         Alert.alert('Error', 'Upload completed but image URL missing');
       }
     } catch (error) {
-      console.error('Error uploading image:', error);
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to upload profile picture');
     } finally {
       setUploading(false);

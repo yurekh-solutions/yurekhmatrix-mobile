@@ -246,7 +246,6 @@ const BottomDrawer: React.FC<BottomDrawerProps> = ({ visible, onClose, navigatio
 
       setSections(drawerSections);
     } catch (error) {
-      console.error('Error loading drawer items:', error);
     } finally {
       setLoading(false);
     }

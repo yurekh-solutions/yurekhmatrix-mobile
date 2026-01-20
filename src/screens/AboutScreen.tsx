@@ -56,7 +56,6 @@ export default function AboutScreen() {
       setTeamMembers(defaultTeam);
       setStats(defaultStats);
     } catch (error) {
-      console.error('Error fetching about data:', error);
     } finally {
       setLoading(false);
     }

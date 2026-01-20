@@ -77,7 +77,6 @@ export default function HelpCenterScreen() {
       setHelpTopics(defaultTopics);
       setFaqData(defaultFAQ);
     } catch (error) {
-      console.error('Error fetching help data:', error);
     } finally {
       setLoading(false);
     }

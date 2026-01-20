@@ -125,7 +125,6 @@ export default function CareersScreen() {
       setJobOpenings(defaultJobs);
       setBenefits(defaultBenefits);
     } catch (error) {
-      console.error('Error fetching careers data:', error);
     } finally {
       setLoading(false);
     }
