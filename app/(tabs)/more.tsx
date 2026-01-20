@@ -39,8 +39,6 @@ type ScreenType =
   | 'faq'
   | 'terms'
   | 'privacy'
-  | 'settings'
-  | 'notifications'
   | 'milo'
   | 'guide'
   | 'careers'
@@ -61,12 +59,6 @@ export default function MoreScreen() {
       id: 'milo',
       label: 'Milo AI',
       icon: 'robot',
-      section: 'Features',
-    },
-    {
-      id: 'discover',
-      label: 'Discover',
-      icon: 'lightbulb-on',
       section: 'Features',
     },
     {
@@ -112,18 +104,6 @@ export default function MoreScreen() {
       section: 'Information',
     },
     {
-      id: 'settings',
-      label: 'Settings',
-      icon: 'cog',
-      section: 'Account',
-    },
-    {
-      id: 'notifications',
-      label: 'Notifications',
-      icon: 'bell',
-      section: 'Account',
-    },
-    {
       id: 'terms',
       label: 'Terms & Conditions',
       icon: 'file-document',
@@ -163,10 +143,6 @@ export default function MoreScreen() {
         return <TermsScreen />;
       case 'privacy':
         return <PrivacyScreen />;
-      case 'settings':
-        return <SettingsScreen />;
-      case 'notifications':
-        return <NotificationsScreen />;
       case 'milo':
         return <MiloAIScreen />;
       case 'guide':
@@ -265,6 +241,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingTop: 24,
+    marginTop: 40,
     paddingBottom: 8,
     marginBottom: 4,
   },
