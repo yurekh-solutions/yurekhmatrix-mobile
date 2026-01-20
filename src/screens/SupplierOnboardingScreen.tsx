@@ -151,20 +151,6 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
         }
       }
 
-      ,
-        address: JSON.stringify(addressObj),
-        productsOffered: JSON.stringify(productsArray),
-        yearsInBusiness: formData.yearsInBusiness || '0',
-        hasPAN: !!files.pan,
-        hasAadhaar: !!files.aadhaar,
-        hasBankProof: !!files.bankProof,
-      });
-      
-      .file } : null,
-        aadhaar: files.aadhaar ? { name: files.aadhaar.name, type: files.aadhaar.mimeType, size: files.aadhaar.size, hasFile: !!(files.aadhaar as any).file } : null,
-        bankProof: files.bankProof ? { name: files.bankProof.name, type: files.bankProof.mimeType, size: files.bankProof.size, hasFile: !!(files.bankProof as any).file } : null,
-      });
-
       const response = await fetch(`${API_BASE_URL}/supplier/submit`, {
         method: 'POST',
         headers: {
@@ -292,8 +278,6 @@ export default function SupplierOnboardingScreen({ navigation }: any) {
 
       if (!result.canceled && result.assets && result.assets[0]) {
         const asset = result.assets[0];
-        .file,
-        });
         
         // For web platform, fetch and convert URI to File object
         if ((asset as any).file) {
