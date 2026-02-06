@@ -21,7 +21,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 
 // Import logo
-const ritzyardLogo = require('../../assets/RITZYARD3.svg');
+const ritzyardLogo = require('../../assets/ritzyard3.svg');
 
 // Design System Colors - Match HomeScreen
 const COLORS = {
@@ -201,7 +201,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
           {/* Logo Section */}
           <View style={styles.logoSection}>
             <View style={styles.logoBox}>
-              <Text style={styles.logoInitials}>RY</Text>
+              <Image source={ritzyardLogo} style={styles.logoImage} resizeMode="cover" />
             </View>
             <Text style={styles.brandName}>
               <Text style={styles.brandR}>r</Text>
@@ -461,12 +461,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    overflow: 'hidden',
   },
-  logoInitials: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.white,
-    letterSpacing: -1,
+  logoImage: {
+    width: '100%',
+    height: '100%',
   },
   brandName: {
     fontSize: 32,

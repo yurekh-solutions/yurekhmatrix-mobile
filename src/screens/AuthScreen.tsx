@@ -20,6 +20,9 @@ import { buyerLogin, buyerRegister } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 
+// Import logo
+const ritzyardLogo = require('../../assets/ritzyard3.svg');
+
 const { width, height } = Dimensions.get('window');
 
 interface AuthScreenProps {
@@ -177,7 +180,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
           {/* Logo */}
           <View style={styles.logoContainer}>
             <View style={styles.logoBox}>
-              <Text style={styles.logoInitials}>RY</Text>
+              <Image source={ritzyardLogo} style={styles.logoImage} resizeMode="cover" />
             </View>
             <Text style={styles.brandName}>
               <Text style={styles.brandR}>r</Text>
@@ -481,12 +484,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#c15738',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
-  logoInitials: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: -1,
+  logoImage: {
+    width: '100%',
+    height: '100%',
   },
   brandName: {
     fontSize: 32,
