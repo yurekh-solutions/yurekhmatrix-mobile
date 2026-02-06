@@ -226,19 +226,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           <LinearGradient colors={[COLORS.secondary, COLORS.background]} style={styles.gradient}>
             {/* Header */}
             <View style={styles.header}>
-              <View>
-                <Text style={styles.greeting}>Welcome Back!</Text>
-                <Text style={styles.location}>RitzYard</Text>
+              <View style={styles.logoContainer}>
+                <View style={styles.logoBox}>
+                  <Text style={styles.logoInitial}>RY</Text>
+                </View>
+                <View>
+                  <Text style={styles.brandName}>
+                    <Text style={styles.brandR}>r</Text>
+                    <Text style={styles.brandText}>itz</Text>
+                    <Text style={styles.brandText}> yard</Text>
+                  </Text>
+                  <Text style={styles.tagline}>Where Value Meets Velocity</Text>
+                </View>
               </View>
               
               <TouchableOpacity
                 style={styles.cartButton}
                 onPress={() => {
-                  // Navigate to RFQ (cart) using expo-router
                   router.push('/rfq');
                 }}
               >
-                <MaterialCommunityIcons name="cart" size={24} color={COLORS.primary} />
+                <MaterialCommunityIcons name="cart" size={22} color={COLORS.primary} />
                 {cartCount > 0 && (
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>{cartCount}</Text>
@@ -434,10 +442,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 55,
     paddingHorizontal: 20,
-    paddingBottom: 20,
-    gap: 12,
+    paddingBottom: 16,
+  },
+
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  logoBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  logoInitial: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: COLORS.white,
+    letterSpacing: -0.5,
+  },
+
+  brandName: {
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+
+  brandR: {
+    color: COLORS.primary,
+    fontWeight: '800',
+  },
+
+  brandText: {
+    color: '#452a21',
+  },
+
+  tagline: {
+    fontSize: 10,
+    color: '#452a21',
+    fontWeight: '500',
+    marginTop: 1,
   },
 
   menuButton: {
@@ -451,32 +502,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  greeting: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    fontWeight: '500',
-  },
-
-  location: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginTop: 2,
-  },
-
   cartButton: {
     position: 'relative',
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 42,
+    height: 42,
+    borderRadius: 10,
     backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
 
   notificationIcon: {
