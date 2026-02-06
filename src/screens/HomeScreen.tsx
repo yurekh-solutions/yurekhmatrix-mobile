@@ -20,6 +20,9 @@ import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
 import ProductNotFoundForm from '../components/ProductNotFoundForm';
 
+// Import logo
+const ritzyardLogo = require('../../assets/ritzyard3.svg');
+
 const { width, height } = Dimensions.get('window');
 const isSmallScreen = width < 360;
 const isMediumScreen = width >= 360 && width < 400;
@@ -228,7 +231,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             <View style={styles.header}>
               <View style={styles.logoContainer}>
                 <View style={styles.logoBox}>
-                  <Text style={styles.logoInitial}>RY</Text>
+                  <Image source={ritzyardLogo} style={styles.logoImage} resizeMode="cover" />
                 </View>
                 <View>
                   <Text style={styles.brandName}>
@@ -460,13 +463,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
 
-  logoInitial: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.white,
-    letterSpacing: -0.5,
+  logoImage: {
+    width: '100%',
+    height: '100%',
   },
 
   brandName: {
