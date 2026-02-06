@@ -20,6 +20,9 @@ import { buyerLogin, buyerRegister } from '../lib/api';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 
+// Import logo
+const ritzyardLogo = require('../../assets/RITZYARD3.svg');
+
 // Design System Colors - Match HomeScreen
 const COLORS = {
   primary: '#c15738',
@@ -197,18 +200,15 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
         >
           {/* Logo Section */}
           <View style={styles.logoSection}>
-            <View style={styles.logoCircle}>
-              <LinearGradient
-                colors={[COLORS.primary, COLORS.primaryLight]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.logoGradient}
-              >
-                <Text style={styles.logoText}>RY</Text>
-              </LinearGradient>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoInitials}>RY</Text>
             </View>
-            <Text style={styles.brandName}>RitzYard</Text>
-            <Text style={styles.tagline}>Smart Material Procurement</Text>
+            <Text style={styles.brandName}>
+              <Text style={styles.brandR}>r</Text>
+              <Text style={styles.brandText}>itz</Text>
+              <Text style={styles.brandText}> yard</Text>
+            </Text>
+            <Text style={styles.tagline}>Where Value Meets Velocity</Text>
           </View>
 
           {/* Toggle Tabs */}
@@ -453,35 +453,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
-  logoCircle: {
-    marginBottom: 16,
-  },
-  logoGradient: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+  logoBox: {
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    marginBottom: 16,
   },
-  logoText: {
-    fontSize: 32,
+  logoInitials: {
+    fontSize: 28,
     fontWeight: '800',
     color: COLORS.white,
+    letterSpacing: -1,
   },
   brandName: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: -0.5,
+  },
+  brandR: {
+    color: COLORS.primary,
+    fontWeight: '800',
+  },
+  brandText: {
+    color: '#452a21',
   },
   tagline: {
-    fontSize: 14,
-    color: COLORS.textLight,
+    fontSize: 13,
+    color: '#452a21',
+    fontWeight: '500',
   },
   tabContainer: {
     flexDirection: 'row',

@@ -176,16 +176,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
         >
           {/* Logo */}
           <View style={styles.logoContainer}>
-            <LinearGradient
-              colors={['#FF6B35', '#FF8C42']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.logoGradient}
-            >
-              <Text style={styles.logoText}>RY</Text>
-            </LinearGradient>
-            <Text style={styles.brandName}>RitzYard</Text>
-            <Text style={styles.tagline}>Smart Material Procurement</Text>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoInitials}>RY</Text>
+            </View>
+            <Text style={styles.brandName}>
+              <Text style={styles.brandR}>r</Text>
+              <Text style={styles.brandText}>itz</Text>
+              <Text style={styles.brandText}> yard</Text>
+            </Text>
+            <Text style={styles.tagline}>Where Value Meets Velocity</Text>
           </View>
 
           {/* Auth Form Glass Card */}
@@ -475,36 +474,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  logoGradient: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  logoBox: {
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+    backgroundColor: '#c15738',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#FF6B35',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 8,
   },
-  logoText: {
-    fontSize: 36,
+  logoInitials: {
+    fontSize: 28,
     fontWeight: '800',
     color: '#fff',
-    fontFamily: 'Arial',
+    letterSpacing: -1,
   },
   brandName: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#2D3436',
-    marginTop: 12,
-    fontFamily: 'Arial',
+    marginTop: 14,
+    letterSpacing: -0.5,
+  },
+  brandR: {
+    color: '#c15738',
+    fontWeight: '800',
+  },
+  brandText: {
+    color: '#452a21',
   },
   tagline: {
-    fontSize: 14,
-    color: '#636E72',
+    fontSize: 13,
+    color: '#452a21',
     marginTop: 4,
-    fontFamily: 'Arial',
+    fontWeight: '500',
   },
   glassCard: {
     borderRadius: 30,
