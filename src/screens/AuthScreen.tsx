@@ -21,7 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 
 // Import logo
-const ritzyardLogo = require('../../assets/ritzyard3.svg');
+const ritzyardLogo = require('../../assets/ritzlogo.png');
 
 const { width, height } = Dimensions.get('window');
 

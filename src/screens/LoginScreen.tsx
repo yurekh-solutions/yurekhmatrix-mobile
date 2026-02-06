@@ -21,7 +21,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 
 // Import logo
-const ritzyardLogo = require('../../assets/ritzyard3.svg');
+const ritzyardLogo = require('../../assets/ritzlogo.png');
 
 // Design System Colors - Match HomeScreen
 const COLORS = {

@@ -21,7 +21,7 @@ import ProductDetailsScreen from './ProductDetailsScreen';
 import ProductNotFoundForm from '../components/ProductNotFoundForm';
 
 // Import logo
-const ritzyardLogo = require('../../assets/ritzyard3.svg');
+const ritzyardLogo = require('../../assets/ritzlogo.png');
 
 const { width } = Dimensions.get('window');
 const isSmallScreen = width < 360;
