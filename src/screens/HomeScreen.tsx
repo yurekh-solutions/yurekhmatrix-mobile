@@ -18,6 +18,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getProducts } from '../lib/api';
 import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
+import ProductNotFoundForm from '../components/ProductNotFoundForm';
 
 const { width, height } = Dimensions.get('window');
 const isSmallScreen = width < 360;
@@ -133,47 +134,42 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     setFilteredProducts(filtered);
   };
 
-  const renderCategoryButton = (category: Category) => (
-    <TouchableOpacity
-      key={category.id}
-      onPress={() => setSelectedCategory(category.value)}
-      style={[
-        styles.categoryButton,
-        selectedCategory === category.value && styles.categoryButtonActive,
-      ]}
-    >
-      <LinearGradient
-        colors={
-          selectedCategory === category.value
-            ? [category.color + 'E0', category.color + 'B0']
-            : [category.color + '15', category.color + '08']
-        }
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[
-          styles.categoryIconBox,
-          selectedCategory === category.value && styles.categoryIconBoxActive,
-        ]}
+  const renderCategoryButton = (category: Category) => {
+    const isActive = selectedCategory === category.value;
+    return (
+      <TouchableOpacity
+        key={category.id}
+        onPress={() => setSelectedCategory(category.value)}
+        style={styles.categoryButton}
+        activeOpacity={0.7}
       >
-        {selectedCategory === category.value && (
-          <View style={styles.categoryGlowEffect} />
-        )}
-        <MaterialCommunityIcons
-          name={category.icon as any}
-          size={28}
-          color={selectedCategory === category.value ? '#FFFFFF' : category.color}
-        />
-      </LinearGradient>
-      <Text
-        style={[
-          styles.categoryButtonText,
-          selectedCategory === category.value && styles.categoryButtonTextActive,
-        ]}
-      >
-        {category.name}
-      </Text>
-    </TouchableOpacity>
-  );
+        <View
+          style={[
+            styles.categoryIconBox,
+            { 
+              backgroundColor: isActive ? category.color : COLORS.white,
+              borderColor: isActive ? category.color : COLORS.border,
+            },
+          ]}
+        >
+          <MaterialCommunityIcons
+            name={category.icon as any}
+            size={22}
+            color={isActive ? '#FFFFFF' : category.color}
+          />
+        </View>
+        <Text
+          style={[
+            styles.categoryButtonText,
+            isActive && { color: category.color, fontWeight: '700' },
+          ]}
+          numberOfLines={1}
+        >
+          {category.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
   
   const trimText = (text: string, wordLimit: number): string => {
     if (!text) return '';
@@ -270,6 +266,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </View>
             </View>
   
+            {/* Conditional Rendering: Form takes full screen when no results */}
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={COLORS.primary} />
+                <Text style={styles.loadingText}>Loading products...</Text>
+              </View>
+            ) : searchQuery.trim() && filteredProducts.length === 0 ? (
+              <View style={styles.formFullContainer}>
+                <ProductNotFoundForm searchQuery={searchQuery} />
+              </View>
+            ) : (
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContent}
@@ -346,27 +353,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               >
                 <TouchableOpacity
                   onPress={() => setSelectedCategory('all')}
-                  style={[
-                    styles.categoryButton,
-                    selectedCategory === 'all' && styles.categoryButtonActive,
-                  ]}
+                  style={styles.categoryButton}
+                  activeOpacity={0.7}
                 >
                   <View
                     style={[
                       styles.categoryIconBox,
-                      { backgroundColor: COLORS.primary + '20' },
-                      selectedCategory === 'all' && {
-                        backgroundColor: COLORS.primary + '40',
+                      { 
+                        backgroundColor: selectedCategory === 'all' ? COLORS.primary : COLORS.white,
+                        borderColor: selectedCategory === 'all' ? COLORS.primary : COLORS.border,
                       },
                     ]}
                   >
-                    <MaterialCommunityIcons name="grid" size={24} color={COLORS.primary} />
+                    <MaterialCommunityIcons name="apps" size={22} color={selectedCategory === 'all' ? '#FFFFFF' : COLORS.primary} />
                   </View>
                   <Text
                     style={[
                       styles.categoryButtonText,
-                      selectedCategory === 'all' && styles.categoryButtonTextActive,
+                      selectedCategory === 'all' && { color: COLORS.primary, fontWeight: '700' },
                     ]}
+                    numberOfLines={1}
                   >
                     All
                   </Text>
@@ -405,6 +411,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 </View>
               )}
             </ScrollView>
+            )}
           </LinearGradient>
         </View>
       )}
@@ -718,58 +725,23 @@ const styles = StyleSheet.create({
   categoryButton: {
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 4,
-  },
-
-  categoryButtonActive: {
-    opacity: 1,
+    marginRight: 16,
   },
 
   categoryIconBox: {
-    width: isSmallScreen ? 56 : 68,
-    height: isSmallScreen ? 56 : 68,
-    borderRadius: 18,
+    width: 50,
+    height: 50,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
-    // Glassmorphism backdrop
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-  },
-
-  categoryIconBoxActive: {
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-    transform: [{ scale: 1.05 }],
-  },
-
-  categoryGlowEffect: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 1.5,
   },
 
   categoryButtonText: {
     fontSize: 11,
     color: COLORS.textLight,
     fontWeight: '600',
-    width: 64,
-    textAlign: 'center',
-  },
-
-  categoryButtonTextActive: {
-    color: COLORS.primary,
-    fontWeight: '700',
+    marginTop: 2,
   },
 
   // Products Grid
@@ -789,14 +761,9 @@ const styles = StyleSheet.create({
     minHeight: CARD_HEIGHT,
     borderRadius: isSmallScreen ? 12 : 16,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: COLORS.white,
     borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.1)',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(193, 87, 56, 0.12)',
   },
 
   productImageContainer: {
@@ -859,6 +826,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
     marginVertical: 60,
+  },
+
+  formFullContainer: {
+    flex: 1,
+    paddingTop: 0,
   },
 
   loadingText: {

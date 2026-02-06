@@ -18,6 +18,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getProducts } from '../lib/api';
 import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
+import ProductNotFoundForm from '../components/ProductNotFoundForm';
 
 const { width } = Dimensions.get('window');
 const isSmallScreen = width < 360;
@@ -136,40 +137,42 @@ export default function ProductsScreen({ navigation }: any) {
     return text;
   };
 
-  const renderCategoryButton = (category: Category) => (
-    <TouchableOpacity
-      key={category.id}
-      onPress={() => setSelectedCategory(category.value)}
-      style={[
-        styles.categoryButton,
-        selectedCategory === category.value && styles.categoryButtonActive,
-      ]}
-    >
-      <View
-        style={[
-          styles.categoryIconBox,
-          { backgroundColor: category.color + '20' },
-          selectedCategory === category.value && {
-            backgroundColor: category.color + '40',
-          },
-        ]}
+  const renderCategoryButton = (category: Category) => {
+    const isActive = selectedCategory === category.value;
+    return (
+      <TouchableOpacity
+        key={category.id}
+        onPress={() => setSelectedCategory(category.value)}
+        style={styles.categoryButton}
+        activeOpacity={0.7}
       >
-        <MaterialCommunityIcons
-          name={category.icon as any}
-          size={24}
-          color={category.color}
-        />
-      </View>
-      <Text
-        style={[
-          styles.categoryButtonText,
-          selectedCategory === category.value && styles.categoryButtonTextActive,
-        ]}
-      >
-        {category.name}
-      </Text>
-    </TouchableOpacity>
-  );
+        <View
+          style={[
+            styles.categoryIconBox,
+            { 
+              backgroundColor: isActive ? category.color : COLORS.white,
+              borderColor: isActive ? category.color : COLORS.border,
+            },
+          ]}
+        >
+          <MaterialCommunityIcons
+            name={category.icon as any}
+            size={22}
+            color={isActive ? '#FFFFFF' : category.color}
+          />
+        </View>
+        <Text
+          style={[
+            styles.categoryButtonText,
+            isActive && { color: category.color, fontWeight: '700' },
+          ]}
+          numberOfLines={1}
+        >
+          {category.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   const renderProductCard = (item: Product) => {
     const imageSource = (typeof item.image === 'object' && item.image !== null)
@@ -267,86 +270,92 @@ export default function ProductsScreen({ navigation }: any) {
           </View>
         </View>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          scrollEventThrottle={16}
-        >
-          {/* Categories */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
+        {/* Conditional Rendering: Form takes full screen when no results */}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Loading products...</Text>
           </View>
+        ) : searchQuery.trim() && filteredProducts.length === 0 ? (
+          <View style={styles.formFullContainer}>
+            <ProductNotFoundForm searchQuery={searchQuery} />
+          </View>
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            scrollEventThrottle={16}
+          >
+            {/* Categories */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Categories</Text>
+            </View>
 
-          <View style={styles.categoriesContainer}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoriesScroll}
-              scrollEventThrottle={16}
-            >
-              <TouchableOpacity
-                onPress={() => setSelectedCategory('all')}
-                style={[
-                  styles.categoryButton,
-                  selectedCategory === 'all' && styles.categoryButtonActive,
-                ]}
+            <View style={styles.categoriesContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoriesScroll}
+                scrollEventThrottle={16}
               >
-                <View
-                  style={[
-                    styles.categoryIconBox,
-                    { backgroundColor: COLORS.primary + '20' },
-                    selectedCategory === 'all' && {
-                      backgroundColor: COLORS.primary + '40',
-                    },
-                  ]}
+                <TouchableOpacity
+                  onPress={() => setSelectedCategory('all')}
+                  style={styles.categoryButton}
+                  activeOpacity={0.7}
                 >
-                  <MaterialCommunityIcons name="grid" size={24} color={COLORS.primary} />
-                </View>
-                <Text
-                  style={[
-                    styles.categoryButtonText,
-                    selectedCategory === 'all' && styles.categoryButtonTextActive,
-                  ]}
-                >
-                  All
-                </Text>
-              </TouchableOpacity>
-              {categories.map(renderCategoryButton)}
-            </ScrollView>
-          </View>
-
-          {/* Products List */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {selectedCategory === 'all' ? 'All Products' : 'Available Products'}
-            </Text>
-            <Text style={styles.productCount}>{filteredProducts.length} items</Text>
-          </View>
-
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Loading products...</Text>
+                  <View
+                    style={[
+                      styles.categoryIconBox,
+                      { 
+                        backgroundColor: selectedCategory === 'all' ? COLORS.primary : COLORS.white,
+                        borderColor: selectedCategory === 'all' ? COLORS.primary : COLORS.border,
+                      },
+                    ]}
+                  >
+                    <MaterialCommunityIcons name="apps" size={22} color={selectedCategory === 'all' ? '#FFFFFF' : COLORS.primary} />
+                  </View>
+                  <Text
+                    style={[
+                      styles.categoryButtonText,
+                      selectedCategory === 'all' && { color: COLORS.primary, fontWeight: '700' },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    All
+                  </Text>
+                </TouchableOpacity>
+                {categories.map(renderCategoryButton)}
+              </ScrollView>
             </View>
-          ) : filteredProducts.length > 0 ? (
-            <FlatList
-              data={filteredProducts}
-              numColumns={2}
-              columnWrapperStyle={styles.columnWrapper}
-              renderItem={({ item }) => renderProductCard(item)}
-              keyExtractor={(item) => item._id || item.id || item.name}
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={false}
-              contentContainerStyle={styles.gridContent}
-            />
-          ) : (
-            <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="inbox-multiple" size={64} color={COLORS.border} />
-              <Text style={styles.emptyText}>No products found</Text>
-              <Text style={styles.emptySubtext}>Try a different search or category</Text>
+
+            {/* Products List */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {selectedCategory === 'all' ? 'All Products' : 'Available Products'}
+              </Text>
+              <Text style={styles.productCount}>{filteredProducts.length} items</Text>
             </View>
-          )}
-        </ScrollView>
+
+            {filteredProducts.length > 0 ? (
+              <FlatList
+                data={filteredProducts}
+                numColumns={2}
+                columnWrapperStyle={styles.columnWrapper}
+                renderItem={({ item }) => renderProductCard(item)}
+                keyExtractor={(item) => item._id || item.id || item.name}
+                showsVerticalScrollIndicator={false}
+                scrollEnabled={false}
+                contentContainerStyle={styles.gridContent}
+              />
+            ) : (
+              <View style={styles.emptyContainer}>
+                <MaterialCommunityIcons name="inbox-multiple" size={64} color={COLORS.border} />
+                <Text style={styles.emptyText}>No products found</Text>
+                <Text style={styles.emptySubtext}>Try a different search or category</Text>
+              </View>
+            )}
+          </ScrollView>
+        )}
       </LinearGradient>
     </SafeAreaView>
   );
@@ -491,39 +500,23 @@ const styles = StyleSheet.create({
   categoryButton: {
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 8,
+    marginRight: 16,
   },
 
-  categoryButtonActive: {},
-
   categoryIconBox: {
-    width: isSmallScreen ? 56 : 68,
-    height: isSmallScreen ? 56 : 68,
-    borderRadius: 16,
+    width: 50,
+    height: 50,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.15)',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-    // Premium glassmorphism
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderWidth: 1.5,
   },
 
   categoryButtonText: {
     fontSize: 11,
     fontWeight: '600',
     color: COLORS.textLight,
-    textAlign: 'center',
-    maxWidth: 70,
-  },
-
-  categoryButtonTextActive: {
-    color: COLORS.primary,
-    fontWeight: '700',
+    marginTop: 2,
   },
 
   // Scroll Content
@@ -547,16 +540,11 @@ const styles = StyleSheet.create({
   productCard: {
     width: CARD_WIDTH,
     minHeight: CARD_HEIGHT,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: COLORS.white,
     borderRadius: isSmallScreen ? 12 : 16,
     overflow: 'hidden',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.1)',
+    borderColor: 'rgba(193, 87, 56, 0.12)',
   },
 
   productImageContainer: {
@@ -624,6 +612,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 60,
+  },
+
+  formFullContainer: {
+    flex: 1,
+    paddingTop: 0,
   },
 
   loadingText: {

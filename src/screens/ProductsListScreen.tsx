@@ -332,6 +332,9 @@ const styles = StyleSheet.create({
     width: (width - 52) / 2,
     borderRadius: 12,
     overflow: 'hidden',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: 'rgba(193, 87, 56, 0.12)',
   },
   cardGradient: {
     flex: 1,

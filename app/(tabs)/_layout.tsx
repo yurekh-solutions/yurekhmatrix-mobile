@@ -1,13 +1,8 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { View, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { colors } from '@/src/styles/colors';
 
 const COLORS = {
   primary: '#c15738', // Terracotta
@@ -23,8 +18,6 @@ const COLORS = {
 };
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
@@ -58,23 +51,11 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
-              {focused ? (
-                <LinearGradient
-                  colors={['rgba(193, 87, 56, 1)', 'rgba(139, 58, 37, 0.95)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={[styles.iconContainer, styles.activeIconGradient]}
-                >
-                  <View style={styles.iconGlowEffect} />
-                  <MaterialCommunityIcons name="home" size={26} color="#FFFFFF" />
-                </LinearGradient>
-              ) : (
-                <View style={[styles.iconContainer, styles.inactiveIconContainer]}>
-                  <MaterialCommunityIcons name="home-outline" size={26} color={color} />
-                </View>
-              )}
-            </View>
+            <MaterialCommunityIcons 
+              name={focused ? "home" : "home-outline"} 
+              size={26} 
+              color={focused ? COLORS.primary : color} 
+            />
           ),
         }}
       />
@@ -85,23 +66,11 @@ export default function TabLayout() {
         options={{
           title: 'Products',
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
-              {focused ? (
-                <LinearGradient
-                  colors={['rgba(193, 87, 56, 1)', 'rgba(139, 58, 37, 0.95)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={[styles.iconContainer, styles.activeIconGradient]}
-                >
-                  <View style={styles.iconGlowEffect} />
-                  <MaterialCommunityIcons name="view-grid" size={26} color="#FFFFFF" />
-                </LinearGradient>
-              ) : (
-                <View style={[styles.iconContainer, styles.inactiveIconContainer]}>
-                  <MaterialCommunityIcons name="view-grid-outline" size={26} color={color} />
-                </View>
-              )}
-            </View>
+            <MaterialCommunityIcons 
+              name={focused ? "view-grid" : "view-grid-outline"} 
+              size={26} 
+              color={focused ? COLORS.primary : color} 
+            />
           ),
         }}
       />
@@ -112,23 +81,11 @@ export default function TabLayout() {
         options={{
           title: 'RFQ',
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
-              {focused ? (
-                <LinearGradient
-                  colors={['rgba(193, 87, 56, 1)', 'rgba(139, 58, 37, 0.95)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={[styles.iconContainer, styles.activeIconGradient]}
-                >
-                  <View style={styles.iconGlowEffect} />
-                  <MaterialCommunityIcons name="cart" size={26} color="#FFFFFF" />
-                </LinearGradient>
-              ) : (
-                <View style={[styles.iconContainer, styles.inactiveIconContainer]}>
-                  <MaterialCommunityIcons name="cart-outline" size={26} color={color} />
-                </View>
-              )}
-            </View>
+            <MaterialCommunityIcons 
+              name={focused ? "cart" : "cart-outline"} 
+              size={26} 
+              color={focused ? COLORS.primary : color} 
+            />
           ),
         }}
       />
@@ -139,23 +96,11 @@ export default function TabLayout() {
         options={{
           title: 'Inquire',
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
-              {focused ? (
-                <LinearGradient
-                  colors={['rgba(193, 87, 56, 1)', 'rgba(139, 58, 37, 0.95)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={[styles.iconContainer, styles.activeIconGradient]}
-                >
-                  <View style={styles.iconGlowEffect} />
-                  <MaterialCommunityIcons name="message-text" size={26} color="#FFFFFF" />
-                </LinearGradient>
-              ) : (
-                <View style={[styles.iconContainer, styles.inactiveIconContainer]}>
-                  <MaterialCommunityIcons name="message-text-outline" size={26} color={color} />
-                </View>
-              )}
-            </View>
+            <MaterialCommunityIcons 
+              name={focused ? "message-text" : "message-text-outline"} 
+              size={26} 
+              color={focused ? COLORS.primary : color} 
+            />
           ),
         }}
       />
@@ -166,41 +111,14 @@ export default function TabLayout() {
         options={{
           title: 'Account',
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
-              {focused ? (
-                <LinearGradient
-                  colors={['rgba(193, 87, 56, 1)', 'rgba(139, 58, 37, 0.95)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={[styles.iconContainer, styles.activeIconGradient]}
-                >
-                  <View style={styles.iconGlowEffect} />
-                  <MaterialCommunityIcons name="account-circle" size={26} color="#FFFFFF" />
-                </LinearGradient>
-              ) : (
-                <View style={[styles.iconContainer, styles.inactiveIconContainer]}>
-                  <MaterialCommunityIcons name="account-circle-outline" size={26} color={color} />
-                </View>
-              )}
-            </View>
+            <MaterialCommunityIcons 
+              name={focused ? "account-circle" : "account-circle-outline"} 
+              size={26} 
+              color={focused ? COLORS.primary : color} 
+            />
           ),
         }}
       />
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  iconContainer: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 14,
-  },
-  activeIconContainer: {
-    backgroundColor: COLORS.primary + '20',
-    borderWidth: 1,
-    borderColor: COLORS.primary + '30',
-  },
-});

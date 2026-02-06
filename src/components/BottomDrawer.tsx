@@ -328,7 +328,7 @@ const BottomDrawer: React.FC<BottomDrawerProps> = ({ visible, onClose, navigatio
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(193, 87, 56, 0.08)',
     justifyContent: 'flex-end',
   },
 
