@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,29 +12,36 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SuccessModal } from '../components/SuccessModal';
+import { GuestSignupModal } from '../components/GuestSignupModal';
 import { buyerLogin, buyerRegister } from '../lib/api';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 
-// Import logo
-const ritzyardLogo = require('../../assets/ritzlogo.png');
+// Import SVG logo
+import RitzLogo from '../../assets/ritz.svg';
 
-// Design System Colors - Match HomeScreen
+// Design System Colors - Matching website exactly
 const COLORS = {
   primary: '#c15738',
-  primaryLight: '#d66f4f',
-  primaryDark: '#8b3a25',
+  primaryDark: '#5c2d23',
   secondary: '#f5ede3',
   background: '#faf8f6',
+  backgroundAlt: '#f5f0eb',
   white: '#ffffff',
-  text: '#683627',
+  text: '#452a21',
   textLight: '#8b7355',
   border: '#e8dfd5',
   card: '#ffffff',
+};
+
+const GRADIENTS = {
+  premium: ['#c15738', '#5c2d23'] as const,
+  background: ['#faf8f6', '#f5ede3', '#faf8f6'] as const,
 };
 
 export default function LoginScreen({ navigation, onLoginSuccess }: any) {
@@ -51,7 +58,35 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
   const [profileImage, setProfileImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showGuestModal, setShowGuestModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Animation refs
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const logoScale = useRef(new Animated.Value(0.8)).current;
+
+  // Start animations on mount
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(logoScale, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const pickImage = async (type: 'profile') => {
     try {
@@ -183,7 +218,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={[COLORS.background, COLORS.secondary, COLORS.background]}
+        colors={GRADIENTS.background}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}
@@ -198,18 +233,34 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Logo Section */}
-          <View style={styles.logoSection}>
-            <View style={styles.logoBox}>
-              <Image source={ritzyardLogo} style={styles.logoImage} resizeMode="cover" />
-            </View>
+          {/* Logo Section with Animation */}
+          <Animated.View 
+            style={[
+              styles.logoSection,
+              {
+                opacity: fadeAnim,
+                transform: [
+                  { translateY: slideAnim },
+                  { scale: logoScale }
+                ]
+              }
+            ]}
+          >
+            <LinearGradient
+              colors={GRADIENTS.premium}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.logoBox}
+            >
+              <RitzLogo width={60} height={60} />
+            </LinearGradient>
             <Text style={styles.brandName}>
               <Text style={styles.brandR}>r</Text>
               <Text style={styles.brandText}>itz</Text>
               <Text style={styles.brandText}> yard</Text>
             </Text>
             <Text style={styles.tagline}>Where Value Meets Velocity</Text>
-          </View>
+          </Animated.View>
 
           {/* Toggle Tabs */}
           <View style={styles.tabContainer}>
@@ -219,7 +270,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
             >
               {isLogin ? (
                 <LinearGradient
-                  colors={[COLORS.primary, COLORS.primaryLight]}
+                  colors={GRADIENTS.premium}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.tabGradient}
@@ -236,7 +287,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
             >
               {!isLogin ? (
                 <LinearGradient
-                  colors={[COLORS.primary, COLORS.primaryLight]}
+                  colors={GRADIENTS.premium}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.tabGradient}
@@ -262,8 +313,8 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
                     <Image source={{ uri: profileImage.uri }} style={styles.uploadedLogo} />
                   ) : (
                     <View style={styles.logoPlaceholder}>
-                      <Ionicons name="briefcase-outline" size={32} color={COLORS.primary} />
-                      <Text style={styles.uploadText}>Add  Logo</Text>
+                      <Ionicons name="person-outline" size={32} color={COLORS.primary} />
+                      <Text style={styles.uploadText}>Profile Photo</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -393,7 +444,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
                 </View>
               ) : (
                 <LinearGradient
-                  colors={[COLORS.primary, COLORS.primaryLight]}
+                  colors={GRADIENTS.premium}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.submitGradient}
@@ -417,7 +468,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
           {/* Guest Mode */}
           <TouchableOpacity
             style={styles.guestButton}
-            onPress={() => onLoginSuccess?.()}
+            onPress={() => setShowGuestModal(true)}
           >
             <Text style={styles.guestText}>Continue as Guest</Text>
             <Ionicons name="arrow-forward" size={16} color={COLORS.primary} />
@@ -431,6 +482,17 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
         onClose={() => setShowSuccess(false)}
         title="Success!"
         message={successMessage}
+      />
+
+      {/* Guest Signup Modal */}
+      <GuestSignupModal
+        visible={showGuestModal}
+        onClose={() => setShowGuestModal(false)}
+        onSignup={() => {
+          setShowGuestModal(false);
+          // Stay on login screen - user can now sign up
+        }}
+        message="Please sign up or login to access all features and start procurement"
       />
     </View>
   );
@@ -454,14 +516,18 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   logoBox: {
-    width: 72,
-    height: 72,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
+    width: 80,
+    height: 80,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
     overflow: 'hidden',
+    shadowColor: '#5c2d23',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
   },
   logoImage: {
     width: '100%',

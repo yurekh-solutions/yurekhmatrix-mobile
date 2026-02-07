@@ -1,35 +1,36 @@
 // RitzYard Theme Colors - Terracotta Earth Tones
-// For React Native / Mobile App Usage
+// For React Native / Mobile App Usage - Matching website exactly
 
 export const colors = {
-  // Primary: Rust Orange/Terracotta
-  primary: '#C94F31',
+  // Primary: Rust Orange/Terracotta - matching website
+  primary: '#c15738',
   primaryLight: '#d47050',
-  primaryDark: '#a84a2f',
+  primaryDark: '#5c2d23',
   primaryGlow: '#e07059',
   
-  // Premium Gradient Colors
-  gradient1: '#c54e30', // Rust orange-brown
-  gradient2: '#643526', // Dark brown
+  // Premium Gradient Colors - matching website exactly
+  gradient1: '#c15738', // Rust orange-brown (start)
+  gradient2: '#5c2d23', // Dark brown (end)
   
   // Secondary: Deep Earth Brown
   secondary: '#5c2d23',
   secondaryLight: '#7a4a3a',
   secondaryDark: '#3d1f16',
+  secondaryDeep: '#452a21',
   
-  // Background & Neutrals
-  background: '#f7f5f2',      // Warm Cream
-  backgroundAlt: '#f4f0ec',   // Warm Cream Alt
+  // Background & Neutrals - matching website
+  background: '#faf8f6',      // Warm Cream
+  backgroundAlt: '#f5ede3',   // Warm Cream Alt
   card: '#ffffff',
   cardAlt: '#faf8f6',
   
-  // Text
-  text: '#352f28',            // Dark text
-  textLight: '#6b6258',       // Muted text
+  // Text - matching website
+  text: '#452a21',            // Dark text (website brand)
+  textLight: '#8b7355',       // Muted text
   textMuted: '#9a8f84',       // Very muted
   
   // Borders
-  border: '#e5ddd6',
+  border: '#e8dfd5',
   borderLight: '#ede9e3',
   
   // Accent: Warm Clay
@@ -59,10 +60,15 @@ export const colors = {
 export const gradients = {
   primary: ['#c15738', '#e07059'],
   secondary: ['#5c2d23', '#7a4a3a'],
-  warm: ['#f7f5f2', '#ede9e3'],
-  premium: ['#c54e30', '#643526'],
-  premiumReverse: ['#643526', '#c54e30'],
-  hero: ['#a84a2f', '#5c2d23'],
+  warm: ['#faf8f6', '#f5ede3'],
+  // Premium gradient matching website exactly
+  premium: ['#c15738', '#5c2d23'],
+  premiumReverse: ['#5c2d23', '#c15738'],
+  hero: ['#c15738', '#5c2d23'],
+  // Button gradient - same as logo
+  button: ['#c15738', '#5c2d23'],
+  // Background gradient
+  background: ['#faf8f6', '#f5ede3', '#faf8f6'],
 };
 
 export const shadows = {

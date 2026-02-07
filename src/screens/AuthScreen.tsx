@@ -16,14 +16,30 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { SuccessModal } from '../components/SuccessModal';
+import { GuestSignupModal } from '../components/GuestSignupModal';
 import { buyerLogin, buyerRegister } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 
-// Import logo
 const ritzyardLogo = require('../../assets/ritzlogo.png');
 
 const { width, height } = Dimensions.get('window');
+
+// Design Colors - matching website
+const COLORS = {
+  primary: '#c15738',
+  primaryDark: '#5c2d23',
+  secondary: '#f5ede3',
+  background: '#faf8f6',
+  white: '#ffffff',
+  text: '#452a21',
+  textLight: '#8b7355',
+};
+
+const GRADIENTS = {
+  premium: ['#c15738', '#5c2d23'] as const,
+  background: ['#faf8f6', '#f5ede3', '#faf8f6'] as const,
+};
 
 interface AuthScreenProps {
   navigation: any;
@@ -41,6 +57,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   const [businessImage, setBusinessImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showGuestModal, setShowGuestModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   const pickImage = async (type: 'profile' | 'business') => {
@@ -158,7 +175,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#FFE5D9', '#FFF5F0', '#FFE5D9']}
+        colors={GRADIENTS.background}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}
@@ -179,9 +196,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
         >
           {/* Logo */}
           <View style={styles.logoContainer}>
-            <View style={styles.logoBox}>
+            <LinearGradient
+              colors={GRADIENTS.premium}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.logoBox}
+            >
               <Image source={ritzyardLogo} style={styles.logoImage} resizeMode="cover" />
-            </View>
+            </LinearGradient>
             <Text style={styles.brandName}>
               <Text style={styles.brandR}>r</Text>
               <Text style={styles.brandText}>itz</Text>
@@ -219,7 +241,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                           <Image source={{ uri: profileImage.uri }} style={styles.selectedImage} />
                         ) : (
                           <View style={styles.imagePlaceholder}>
-                            <Ionicons name="camera-outline" size={32} color="#FF6B35" />
+                            <Ionicons name="camera-outline" size={32} color={COLORS.primary} />
                             <Text style={styles.imagePickerText}>Add Photo</Text>
                           </View>
                         )}
@@ -233,7 +255,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                           <Image source={{ uri: businessImage.uri }} style={styles.selectedImage} />
                         ) : (
                           <View style={styles.imagePlaceholder}>
-                            <Ionicons name="business-outline" size={32} color="#FF6B35" />
+                            <Ionicons name="business-outline" size={32} color={COLORS.primary} />
                             <Text style={styles.imagePickerText}>Add Logo</Text>
                           </View>
                         )}
@@ -243,7 +265,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
                   <Text style={styles.inputLabel}>FULL NAME</Text>
                   <View style={styles.inputContainer}>
-                    <Ionicons name="person-outline" size={20} color="#FF6B35" />
+                    <Ionicons name="person-outline" size={20} color={COLORS.primary} />
                     <TextInput
                       style={styles.input}
                       placeholder="John Doe"
@@ -255,7 +277,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
                   <Text style={styles.inputLabel}>PHONE NUMBER</Text>
                   <View style={styles.inputContainer}>
-                    <Ionicons name="call-outline" size={20} color="#FF6B35" />
+                    <Ionicons name="call-outline" size={20} color={COLORS.primary} />
                     <TextInput
                       style={styles.input}
                       placeholder="+1 (555) 000-0000"
@@ -268,7 +290,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
                   <Text style={styles.inputLabel}>EMAIL</Text>
                   <View style={styles.inputContainer}>
-                    <Ionicons name="mail-outline" size={20} color="#FF6B35" />
+                    <Ionicons name="mail-outline" size={20} color={COLORS.primary} />
                     <TextInput
                       style={styles.input}
                       placeholder="you@example.com"
@@ -282,7 +304,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
                   <Text style={styles.inputLabel}>COMPANY NAME</Text>
                   <View style={styles.inputContainer}>
-                    <Ionicons name="business-outline" size={20} color="#FF6B35" />
+                    <Ionicons name="business-outline" size={20} color={COLORS.primary} />
                     <TextInput
                       style={styles.input}
                       placeholder="Matrix Corp"
@@ -294,7 +316,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
                   <Text style={styles.inputLabel}>PASSWORD</Text>
                   <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={20} color="#FF6B35" />
+                    <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} />
                     <TextInput
                       style={styles.input}
                       placeholder="••••••••"
@@ -307,7 +329,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
                   <Text style={styles.inputLabel}>CONFIRM PASSWORD</Text>
                   <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={20} color="#FF6B35" />
+                    <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} />
                     <TextInput
                       style={styles.input}
                       placeholder="••••••••"
@@ -323,7 +345,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                 <View>
                   <Text style={styles.inputLabel}>EMAIL</Text>
                   <View style={styles.inputContainer}>
-                    <Ionicons name="mail-outline" size={20} color="#FF6B35" />
+                    <Ionicons name="mail-outline" size={20} color={COLORS.primary} />
                     <TextInput
                       style={styles.input}
                       placeholder="you@example.com"
@@ -337,7 +359,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
                   <Text style={styles.inputLabel}>PASSWORD</Text>
                   <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={20} color="#FF6B35" />
+                    <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} />
                     <TextInput
                       style={styles.input}
                       placeholder="••••••••"
@@ -360,7 +382,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               {/* Submit Button */}
               <TouchableOpacity onPress={handleAuth} disabled={loading}>
                 <LinearGradient
-                  colors={['#8B2E1D', '#5D1A0F']}
+                  colors={GRADIENTS.premium}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.submitButton}
@@ -415,10 +437,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
           {/* Guest Mode */}
           <TouchableOpacity
             style={styles.guestButton}
-            onPress={() => navigation.replace('Home')}
+            onPress={() => setShowGuestModal(true)}
           >
             <Text style={styles.guestText}>Continue as Guest</Text>
-            <Ionicons name="arrow-forward" size={20} color="#FF6B35" />
+            <Ionicons name="arrow-forward" size={20} color={COLORS.primary} />
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -429,6 +451,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
         onClose={() => setShowSuccess(false)}
         title="Success!"
         message={successMessage}
+      />
+
+      {/* Guest Signup Modal */}
+      <GuestSignupModal
+        visible={showGuestModal}
+        onClose={() => setShowGuestModal(false)}
+        onSignup={() => {
+          setShowGuestModal(false);
+          // Stay on auth screen - user can now sign up
+        }}
+        message="Please sign up or login to access all features and start procurement"
       />
     </View>
   );
@@ -455,21 +488,21 @@ const styles = StyleSheet.create({
   orb1: {
     width: 300,
     height: 300,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#c15738',
     top: -100,
     right: -100,
   },
   orb2: {
     width: 200,
     height: 200,
-    backgroundColor: '#FFB84D',
+    backgroundColor: '#d47050',
     bottom: 100,
     left: -50,
   },
   orb3: {
     width: 150,
     height: 150,
-    backgroundColor: '#FF8C42',
+    backgroundColor: '#e07059',
     top: height * 0.4,
     right: 20,
   },
@@ -478,13 +511,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   logoBox: {
-    width: 72,
-    height: 72,
-    borderRadius: 16,
-    backgroundColor: '#c15738',
+    width: 80,
+    height: 80,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    shadowColor: '#5c2d23',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
   },
   logoImage: {
     width: '100%',
@@ -573,7 +610,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   forgotText: {
-    color: '#FF6B35',
+    color: COLORS.primary,
     fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Arial',
@@ -582,7 +619,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 15,
     alignItems: 'center',
-    shadowColor: '#FF6B35',
+    shadowColor: COLORS.primaryDark,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -638,7 +675,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Arial',
   },
   toggleLink: {
-    color: '#FF6B35',
+    color: COLORS.primary,
     fontSize: 14,
     fontWeight: '700',
     fontFamily: 'Arial',
@@ -674,7 +711,7 @@ const styles = StyleSheet.create({
   },
   imagePickerText: {
     fontSize: 10,
-    color: '#FF6B35',
+    color: COLORS.primary,
     marginTop: 4,
     fontWeight: '600',
   },
@@ -686,7 +723,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   guestText: {
-    color: '#FF6B35',
+    color: COLORS.primary,
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Arial',

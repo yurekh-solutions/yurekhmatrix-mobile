@@ -37,8 +37,21 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png",
-      "bundler": "metro"
+      "favicon": "./assets/ritzlogo.png",
+      "bundler": "metro",
+      "name": "ritzyard - Where Value Meets Velocity",
+      "shortName": "ritzyard",
+      "description": "ritzyard - Premium B2B procurement platform connecting buyers with verified suppliers. Find quality products, request quotes, and streamline your supply chain with ritzyard.",
+      "themeColor": "#c15738",
+      "backgroundColor": "#faf8f6",
+      "lang": "en",
+      "orientation": "any",
+      "display": "standalone",
+      "meta": {
+        "keywords": "ritzyard, B2B procurement, supplier portal, RFQ platform, bulk ordering, wholesale marketplace, business procurement, verified suppliers, quote requests, supply chain management",
+        "author": "ritzyard",
+        "viewport": "width=device-width, initial-scale=1, maximum-scale=5"
+      }
     },
     "plugins": [
       "expo-router",

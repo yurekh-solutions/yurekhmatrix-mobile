@@ -20,27 +20,31 @@ import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
 import ProductNotFoundForm from '../components/ProductNotFoundForm';
 
-// Import logo
-const ritzyardLogo = require('../../assets/ritzlogo.png');
+// Import SVG logo
+import RitzLogo from '../../assets/ritz.svg';
 
 const { width } = Dimensions.get('window');
 const isSmallScreen = width < 360;
 const CARD_WIDTH = width * 0.44; // 44% of screen width for perfect spacing
 const CARD_HEIGHT = CARD_WIDTH * 1.15; // Maintain aspect ratio
 
-// Design System Colors
+// Design System Colors - Matching website
 const COLORS = {
   primary: '#c15738',
   primaryLight: '#d66f4f',
-  primaryDark: '#8b3a25',
+  primaryDark: '#5c2d23',
   secondary: '#f5ede3',
   background: '#faf8f6',
   white: '#ffffff',
-  text: '#683627',
+  text: '#452a21',
   textLight: '#8b7355',
   border: '#e8dfd5',
   glass: 'rgba(255, 255, 255, 0.8)',
   glassLight: 'rgba(255, 255, 255, 0.6)',
+};
+
+const GRADIENTS = {
+  premium: ['#c15738', '#5c2d23'] as const,
 };
 
 interface Product {
@@ -236,9 +240,14 @@ export default function ProductsScreen({ navigation }: any) {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <View style={styles.logoBox}>
-              <Image source={ritzyardLogo} style={styles.logoImage} resizeMode="cover" />
-            </View>
+            <LinearGradient
+              colors={GRADIENTS.premium}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.logoBox}
+            >
+              <RitzLogo width={32} height={32} />
+            </LinearGradient>
             <View>
               <Text style={styles.brandName}>
                 <Text style={styles.brandR}>r</Text>
@@ -400,11 +409,15 @@ const styles = StyleSheet.create({
   logoBox: {
     width: 42,
     height: 42,
-    borderRadius: 10,
-    backgroundColor: COLORS.primary,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    shadowColor: '#5c2d23',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   logoImage: {

@@ -6,12 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -28,20 +26,9 @@ export const GuestSignupModal: React.FC<GuestSignupModalProps> = ({
   onSignup,
   message = 'Please sign up to add items to your cart',
 }) => {
-  const { logout } = useAuth();
-
   const handleSignup = async () => {
-    try {
-      // Logout (which will reset the app to login screen)
-      await logout();
-      Alert.alert(
-        'Redirecting to Sign Up',
-        'You can now create an account to start adding items to your cart.',
-        [{ text: 'OK', onPress: onSignup }]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Please restart the app to sign up.');
-    }
+    // Simply close the modal - user stays on login/signup screen
+    onSignup();
   };
   return (
     <Modal
@@ -94,11 +81,6 @@ export const GuestSignupModal: React.FC<GuestSignupModalProps> = ({
                     <Text style={styles.signupButtonText}>Sign Up Now</Text>
                     <Ionicons name="arrow-forward" size={20} color="#fff" />
                   </LinearGradient>
-                </TouchableOpacity>
-
-                {/* Continue as Guest */}
-                <TouchableOpacity onPress={onClose} style={styles.guestButton}>
-                  <Text style={styles.guestButtonText}>Continue as Guest</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -190,16 +172,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 17,
     fontWeight: '700',
-    fontFamily: 'Arial',
-  },
-  guestButton: {
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  guestButtonText: {
-    color: '#636E72',
-    fontSize: 15,
-    fontWeight: '600',
     fontFamily: 'Arial',
   },
 });

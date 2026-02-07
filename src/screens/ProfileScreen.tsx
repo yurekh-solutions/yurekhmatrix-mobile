@@ -17,9 +17,43 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { colors } from '@/src/styles/colors';
 import { useAuth } from '@/src/contexts/AuthContext';
-import { getBuyerProfile, uploadProfilePicture, API_BASE_URL } from '@/src/lib/api';
+import { getBuyerProfile, uploadProfilePicture, API_BASE_URL, getRFQHistory } from '@/src/lib/api';
 
 const { width } = Dimensions.get('window');
+
+// Helper to construct proper image URL from backend path
+const getImageUrl = (imagePath: string | undefined): string | undefined => {
+  if (!imagePath) return undefined;
+  
+  // If it's already a full URL, return as-is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If it's a server-side path (starts with /opt/render or similar), extract filename
+  if (imagePath.includes('/uploads/')) {
+    const filename = imagePath.split('/uploads/').pop();
+    if (filename) {
+      // Construct proper URL using API base
+      const baseUrl = API_BASE_URL.replace('/api', '');
+      return `${baseUrl}/uploads/${filename}`;
+    }
+  }
+  
+  // If it's a relative path starting with /uploads
+  if (imagePath.startsWith('/uploads/')) {
+    const baseUrl = API_BASE_URL.replace('/api', '');
+    return `${baseUrl}${imagePath}`;
+  }
+  
+  // If it's just a filename, assume it's in uploads
+  if (!imagePath.includes('/')) {
+    const baseUrl = API_BASE_URL.replace('/api', '');
+    return `${baseUrl}/uploads/${imagePath}`;
+  }
+  
+  return imagePath;
+};
 
 interface UserProfile {
   id: string;
@@ -44,10 +78,55 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [rfqStats, setRfqStats] = useState({
+    activeRFQs: 0,
+    completedRFQs: 0,
+    totalSpent: 0,
+  });
 
   useEffect(() => {
     loadProfileData();
+    loadRFQStats();
   }, [user?.profilePicture, user?.avatar]);
+
+  // Fetch and calculate RFQ statistics
+  const loadRFQStats = async () => {
+    if (!token) return;
+    
+    try {
+      const rfqHistory = await getRFQHistory(token);
+      
+      if (Array.isArray(rfqHistory)) {
+        // Calculate active RFQs (pending, processing, in-progress)
+        const activeRFQs = rfqHistory.filter((rfq: any) => 
+          ['pending', 'processing', 'in-progress', 'quoted', 'new'].includes(rfq.status?.toLowerCase())
+        ).length;
+        
+        // Calculate completed RFQs (completed, approved, delivered)
+        const completedRFQs = rfqHistory.filter((rfq: any) => 
+          ['completed', 'approved', 'delivered', 'closed'].includes(rfq.status?.toLowerCase())
+        ).length;
+        
+        // Calculate total spent from completed orders
+        const totalSpent = rfqHistory
+          .filter((rfq: any) => ['completed', 'approved', 'delivered', 'closed'].includes(rfq.status?.toLowerCase()))
+          .reduce((sum: number, rfq: any) => {
+            const amount = rfq.totalAmount || rfq.amount || rfq.quotedPrice || 0;
+            return sum + (typeof amount === 'number' ? amount : parseFloat(amount) || 0);
+          }, 0);
+        
+        setRfqStats({
+          activeRFQs,
+          completedRFQs,
+          totalSpent,
+        });
+        
+        console.log('📊 RFQ Stats loaded:', { activeRFQs, completedRFQs, totalSpent, total: rfqHistory.length });
+      }
+    } catch (error) {
+      console.log('Failed to load RFQ stats:', error);
+    }
+  };
 
   const loadProfileData = async () => {
     try {
@@ -259,9 +338,9 @@ export default function ProfileScreen() {
                 <ActivityIndicator size="small" color="#ffffff" />
               </View>
             )}
-            {profile.profilePicture || profile.avatar ? (
+            {getImageUrl(profile.profilePicture) || getImageUrl(profile.avatar) ? (
               <Image
-                source={{ uri: profile.profilePicture || profile.avatar }}
+                source={{ uri: getImageUrl(profile.profilePicture) || getImageUrl(profile.avatar) }}
                 style={styles.avatar}
               />
             ) : (
@@ -279,7 +358,7 @@ export default function ProfileScreen() {
           {/* Company Logo Display */}
           {profile.businessImage && (
             <View style={styles.businessLogoContainer}>
-              <Image source={{ uri: profile.businessImage }} style={styles.businessLogo} />
+              <Image source={{ uri: getImageUrl(profile.businessImage) }} style={styles.businessLogo} />
               <TouchableOpacity style={styles.editBusinessButton} onPress={() => pickImage('business')}>
                 <MaterialCommunityIcons name="camera" size={12} color="#ffffff" />
               </TouchableOpacity>
@@ -305,11 +384,21 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Quick Stats */}
+        {/* Quick Stats - Dynamic from RFQ History */}
         <View style={styles.statsSection}>
-          <StatCard icon="file-document-outline" label="Active RFQs" value={profile.totalRFQs || 0} />
-          <StatCard icon="check-circle" label="Completed" value={profile.completedOrders || 0} />
-          <StatCard icon="currency-inr" label="Total Spent" value={profile.totalSpent ? `₹${(profile.totalSpent / 100000).toFixed(1)}L` : '₹0'} />
+          <StatCard icon="file-document-outline" label="Active RFQs" value={rfqStats.activeRFQs} />
+          <StatCard icon="check-circle" label="Completed" value={rfqStats.completedRFQs} />
+          <StatCard 
+            icon="currency-inr" 
+            label="Total Spent" 
+            value={
+              rfqStats.totalSpent >= 100000 
+                ? `₹${(rfqStats.totalSpent / 100000).toFixed(1)}L`
+                : rfqStats.totalSpent >= 1000
+                  ? `₹${(rfqStats.totalSpent / 1000).toFixed(1)}K`
+                  : `₹${rfqStats.totalSpent}`
+            } 
+          />
         </View>
 
         {/* Contact Information */}
@@ -376,32 +465,6 @@ export default function ProfileScreen() {
             </View>
           </View>
         )}
-
-        {/* Account Actions */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <MaterialCommunityIcons name="account-settings" size={18} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Account</Text>
-          </View>
-
-          <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="file-document-multiple-outline" size={18} color={colors.primary} />
-            <Text style={styles.actionButtonText}>RFQ History</Text>
-            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textLight} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="headset" size={18} color={colors.primary} />
-            <Text style={styles.actionButtonText}>Support</Text>
-            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textLight} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="lock-reset" size={18} color={colors.primary} />
-            <Text style={styles.actionButtonText}>Change Password</Text>
-            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.textLight} />
-          </TouchableOpacity>
-        </View>
 
         {/* Logout Button */}
         <View style={styles.section}>
