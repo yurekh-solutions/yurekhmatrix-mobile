@@ -438,7 +438,7 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
       
       // Create an AbortController for timeout handling
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for free-tier backend wake-up
       
       const response = await fetch(`${API_BASE_URL}/auth/user/signup`, {
         method: 'POST',
@@ -490,7 +490,7 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
     let errorMessage = 'Registration failed';
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
-        errorMessage = 'Request timed out. The backend may be waking up. Please try again in a moment.';
+        errorMessage = 'Backend is waking up. Free-tier servers take 1-2 minutes to start. Please try again.';
       } else if (error.message.includes('Network request failed')) {
         errorMessage = 'Network error. Please check your connection and try again.';
       } else {

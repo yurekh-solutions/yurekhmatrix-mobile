@@ -157,12 +157,12 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
     setLoading(true);
     setLoadingMessage(isLogin ? 'Signing in...' : 'Creating account...');
     
-    // Show backend wake-up message after 3 seconds for registration
+    // Show backend wake-up message after 5 seconds for registration
     let wakeUpTimeout: NodeJS.Timeout | null = null;
     if (!isLogin) {
       wakeUpTimeout = setTimeout(() => {
-        setLoadingMessage('Waking up backend... Please wait');
-      }, 3000);
+        setLoadingMessage('Backend waking up... This may take 1-2 minutes');
+      }, 5000);
     }
 
     try {
