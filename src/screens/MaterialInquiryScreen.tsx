@@ -20,7 +20,8 @@ import { colors } from '@/src/styles/colors';
 import { submitMaterialInquiry } from '@/src/lib/api';
 
 // WhatsApp contact number for inquiries
-const WHATSAPP_NUMBER = '919136242706';
+// Products & Material Inquiry WhatsApp number
+const WHATSAPP_NUMBER = '919559434242';
 
 interface UploadedFile {
   id: string;
@@ -61,6 +62,7 @@ export default function MaterialInquiryScreen() {
 
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [showMaterialDropdown, setShowMaterialDropdown] = useState(false);
   const [selectedMaterialType, setSelectedMaterialType] = useState<MaterialType | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -161,12 +163,12 @@ export default function MaterialInquiryScreen() {
       Alert.alert('Required Field', 'Please enter your phone number');
       return false;
     }
-    // Phone validation: Must be in format +XX XXXXXXXXXX (country code + 10 digits)
-    const phoneRegex = /^\+\d{2}\s\d{10}$/;
-    if (!phoneRegex.test(formData.phone)) {
+    // Phone validation: Accept various formats - just needs 10 digits minimum
+    const cleanPhone = formData.phone.replace(/[\s\-\(\)\+]/g, '');
+    if (cleanPhone.length < 10 || !/^\d+$/.test(cleanPhone.slice(-10))) {
       Alert.alert(
-        'Invalid Phone Format',
-        'Please enter phone number in format: +91 9876543210\n(Country code + 10 digits)'
+        'Invalid Phone Number',
+        'Please enter a valid phone number (at least 10 digits)'
       );
       return false;
     }
@@ -189,6 +191,13 @@ export default function MaterialInquiryScreen() {
     if (!validateForm()) return;
 
     setLoading(true);
+    setLoadingMessage('Submitting inquiry...');
+    
+    // Show backend wake-up message after 3 seconds
+    const wakeUpTimeout = setTimeout(() => {
+      setLoadingMessage('Waking up backend... Please wait');
+    }, 3000);
+    
     try {
       // Parse quantity safely
       const parsedQuantity = parseFloat(formData.quantity);
@@ -227,29 +236,31 @@ export default function MaterialInquiryScreen() {
 
       // Submit to backend
       const result = await submitMaterialInquiry(inquiryData);
+      clearTimeout(wakeUpTimeout);
       setLoading(false);
+      setLoadingMessage('');
 
       if (result.success) {
         // Extract inquiry number from response
         const inquiryNumber = result.data?.inquiryNumber || 'N/A';
-        // Generate formatted WhatsApp message
-        let whatsappMessage = `*🔧 Material Inquiry Request*\n`;
-        whatsappMessage += `*Inquiry #:* ${inquiryNumber}\n\n`;
-        whatsappMessage += `*👤 Customer Details*\n`;
-        whatsappMessage += `📛 Name: ${formData.name}\n`;
-        whatsappMessage += `🏢 Company: ${formData.company || 'Not specified'}\n`;
-        whatsappMessage += `📧 Email: ${formData.email}\n`;
-        whatsappMessage += `📱 Phone: ${formData.phone || 'Not provided'}\n\n`;
-        whatsappMessage += `*🔨 Material Details*\n`;
-        whatsappMessage += `📦 Material: ${formData.material}\n`;
-        whatsappMessage += `📊 Quantity: ${formData.quantity}\n`;
+        // Generate formatted WhatsApp message - Professional format without emojis
+        let whatsappMessage = `*MATERIAL INQUIRY REQUEST*\n`;
+        whatsappMessage += `Inquiry No: ${inquiryNumber}\n\n`;
+        whatsappMessage += `*CUSTOMER DETAILS*\n`;
+        whatsappMessage += `Name: ${formData.name}\n`;
+        whatsappMessage += `Company: ${formData.company || 'Not specified'}\n`;
+        whatsappMessage += `Email: ${formData.email}\n`;
+        whatsappMessage += `Phone: ${formData.phone || 'Not provided'}\n\n`;
+        whatsappMessage += `*MATERIAL DETAILS*\n`;
+        whatsappMessage += `Material: ${formData.material}\n`;
+        whatsappMessage += `Quantity: ${formData.quantity}\n`;
         if (formData.specifications) {
-          whatsappMessage += `📝 Specs: ${formData.specifications}\n`;
+          whatsappMessage += `Specifications: ${formData.specifications}\n`;
         }
         if (formData.deliveryDate) {
-          whatsappMessage += `📅 Delivery Date: ${formData.deliveryDate}\n`;
+          whatsappMessage += `Delivery Date: ${formData.deliveryDate}\n`;
         }
-        whatsappMessage += `\n_✅ Submitted via RitzYard Platform_`;
+        whatsappMessage += `\n--- Submitted via RitzYard Platform ---`;
 
         const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
 
@@ -262,8 +273,10 @@ export default function MaterialInquiryScreen() {
         Alert.alert('Error', result.message || 'Failed to submit inquiry');
       }
     } catch (error: any) {
+      clearTimeout(wakeUpTimeout);
       setLoading(false);
-      Alert.alert('Error', 'Failed to submit inquiry. Please try again.');
+      setLoadingMessage('');
+      Alert.alert('Error', error?.message || 'Failed to submit inquiry. Please try again.');
     }
   };
 
@@ -547,6 +560,22 @@ export default function MaterialInquiryScreen() {
         </ScrollView>
       </LinearGradient>
 
+      {/* Loading Popup */}
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingPopup}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingTitle}>{loadingMessage || 'Please wait...'}</Text>
+            <Text style={styles.loadingSubtext}>
+              {loadingMessage.includes('Waking') 
+                ? 'Free-tier backend may take a moment to start'
+                : 'Submitting your inquiry to our team'
+              }
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* Success Modal */}
       {successData && (
         <View style={styles.modalOverlay}>
@@ -590,24 +619,24 @@ export default function MaterialInquiryScreen() {
               <TouchableOpacity
                 style={styles.whatsappButton}
                 onPress={() => {
-                  // Generate WhatsApp message
-                  let whatsappMessage = `*🔧 Material Inquiry Request*\n`;
-                  whatsappMessage += `*Inquiry #:* ${successData.inquiryNumber}\n\n`;
-                  whatsappMessage += `*👤 Customer Details*\n`;
-                  whatsappMessage += `📛 Name: ${formData.name}\n`;
-                  whatsappMessage += `🏢 Company: ${formData.company}\n`;
-                  whatsappMessage += `📧 Email: ${formData.email}\n`;
-                  whatsappMessage += `📱 Phone: ${formData.phone}\n\n`;
-                  whatsappMessage += `*🔨 Material Details*\n`;
-                  whatsappMessage += `📦 Material: ${formData.material}\n`;
-                  whatsappMessage += `📊 Quantity: ${formData.quantity}\n`;
+                  // Generate WhatsApp message - Professional format without emojis
+                  let whatsappMessage = `*MATERIAL INQUIRY REQUEST*\n`;
+                  whatsappMessage += `Inquiry No: ${successData.inquiryNumber}\n\n`;
+                  whatsappMessage += `*CUSTOMER DETAILS*\n`;
+                  whatsappMessage += `Name: ${formData.name}\n`;
+                  whatsappMessage += `Company: ${formData.company}\n`;
+                  whatsappMessage += `Email: ${formData.email}\n`;
+                  whatsappMessage += `Phone: ${formData.phone}\n\n`;
+                  whatsappMessage += `*MATERIAL DETAILS*\n`;
+                  whatsappMessage += `Material: ${formData.material}\n`;
+                  whatsappMessage += `Quantity: ${formData.quantity}\n`;
                   if (formData.specifications) {
-                    whatsappMessage += `📝 Specs: ${formData.specifications}\n`;
+                    whatsappMessage += `Specifications: ${formData.specifications}\n`;
                   }
                   if (formData.deliveryDate) {
-                    whatsappMessage += `📅 Delivery Date: ${formData.deliveryDate}\n`;
+                    whatsappMessage += `Delivery Date: ${formData.deliveryDate}\n`;
                   }
-                  whatsappMessage += `\n_✅ Submitted via RitzYard Platform_`;
+                  whatsappMessage += `\n--- Submitted via RitzYard Platform ---`;
 
                   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
                   Linking.openURL(whatsappUrl);
@@ -1153,5 +1182,40 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.primary,
     textAlign: 'center',
+  },
+  // Loading Popup Styles
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  loadingPopup: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 28,
+    alignItems: 'center',
+    width: '75%',
+    maxWidth: 280,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
+  },
+  loadingTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  loadingSubtext: {
+    fontSize: 13,
+    color: colors.textLight,
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });

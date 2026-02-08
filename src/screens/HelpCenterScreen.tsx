@@ -15,7 +15,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/src/styles/colors';
 
 const { width } = Dimensions.get('window');
-const WHATSAPP_NUMBER = '+919136242706';
+// Support WhatsApp number
+const WHATSAPP_NUMBER = '+919559262525';
 
 interface FAQItem {
   id: string;

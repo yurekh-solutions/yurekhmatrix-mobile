@@ -20,8 +20,8 @@ import CartService from '../lib/cartService';
 import ProductDetailsScreen from './ProductDetailsScreen';
 import ProductNotFoundForm from '../components/ProductNotFoundForm';
 
-// Import SVG logo
-import RitzLogo from '../../assets/ritz.svg';
+// Use PNG logo for production build compatibility (SVG doesn't work in APK)
+const RitzLogoPng = require('../../assets/ritz.png');
 
 const { width, height } = Dimensions.get('window');
 const isSmallScreen = width < 360;
@@ -240,7 +240,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   end={{ x: 1, y: 1 }}
                   style={styles.logoBox}
                 >
-                  <RitzLogo width={32} height={32} />
+                  <Image source={RitzLogoPng} style={{ width: 32, height: 32 }} resizeMode="contain" />
                 </LinearGradient>
                 <View>
                   <Text style={styles.brandName}>

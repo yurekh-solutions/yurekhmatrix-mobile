@@ -191,40 +191,40 @@ const RFQScreen: React.FC<RFQScreenProps> = ({ visible, product, onClose, onAddT
 
       if (response.ok) {
         // Send WhatsApp message to admin with comprehensive RFQ details
-        const whatsappMessage = `🔧 *REQUEST FOR QUOTATION (RFQ)*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        const whatsappMessage = `*REQUEST FOR QUOTATION (RFQ)*
+----------------------------------------
 
-📦 *MATERIAL REQUIREMENTS*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*MATERIAL REQUIREMENTS*
+----------------------------------------
 Product: *${rfqData.productName}*
 Category: ${rfqData.category?.replace('-', ' ').toUpperCase()}
 Brand/Make: ${rfqData.brand}
 Grade/Type: ${rfqData.grade}
 Quantity: *${rfqData.quantity} MT*
 
-👤 *CUSTOMER DETAILS*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*CUSTOMER DETAILS*
+----------------------------------------
 Name: ${rfqData.customerName}
 Company: ${rfqData.companyName}
 Email: ${rfqData.email}
 Phone: ${rfqData.phone}
 Delivery Location: ${rfqData.deliveryLocation}
 
-📋 *SUBMISSION DETAILS*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*SUBMISSION DETAILS*
+----------------------------------------
 Submitted: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
 Source: RitzYard Mobile App
 
-✅ Please confirm quotation details and expected timeline`;
+Please confirm quotation details and expected timeline.`;
         
-        const whatsappUrl = `https://wa.me/919136242706?text=${encodeURIComponent(whatsappMessage)}`;
+        const whatsappUrl = `https://wa.me/919559434242?text=${encodeURIComponent(whatsappMessage)}`;
         
         Alert.alert(
-          '✅ RFQ Submitted Successfully!',
+          'RFQ Submitted Successfully!',
           'Your quotation request has been received.\n\nShare details on WhatsApp to our team for faster response.',
           [
             {
-              text: '📱 Share on WhatsApp',
+              text: 'Share on WhatsApp',
               onPress: () => {
                 // Open WhatsApp
                 window.open(whatsappUrl, '_blank');

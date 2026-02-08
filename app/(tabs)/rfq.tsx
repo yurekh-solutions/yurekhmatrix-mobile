@@ -167,9 +167,9 @@ export default function RFQTab() {
       whatsappMessage += `Company: ${companyName}\n`;
       whatsappMessage += `Delivery Location: ${deliveryLocation}\n\n`;
 
-      whatsappMessage += `_${backendSubmitted ? 'Also saved in system' : 'Offline submission'}_`;
+      whatsappMessage += `--- ${backendSubmitted ? 'Saved in system' : 'Offline submission'} ---`;
 
-      const whatsappUrl = `https://wa.me/919136242706?text=${encodeURIComponent(whatsappMessage)}`;
+      const whatsappUrl = `https://wa.me/919559434242?text=${encodeURIComponent(whatsappMessage)}`;
 
       // Clear cart IMMEDIATELY before opening WhatsApp
       await CartService.clearCart();

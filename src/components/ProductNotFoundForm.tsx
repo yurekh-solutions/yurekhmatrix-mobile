@@ -12,7 +12,8 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const WHATSAPP_NUMBER = '919136242706';
+// Products & Material Inquiry WhatsApp number
+const WHATSAPP_NUMBER = '919559434242';
 
 const COLORS = {
   primary: '#c15738',

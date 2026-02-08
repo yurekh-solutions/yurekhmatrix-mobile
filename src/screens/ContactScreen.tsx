@@ -16,7 +16,8 @@ import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/src/styles/colors';
 
-const WHATSAPP_NUMBER = '919136242706';
+// Support WhatsApp number - Form data goes here
+const WHATSAPP_NUMBER = '919559262525';
 const { width } = Dimensions.get('window');
 
 interface ContactInfo {
@@ -48,7 +49,7 @@ export default function ContactScreen({ navigation }: any) {
       // TODO: Fetch from backend API
       // For now, using fallback data
       const defaultContacts: ContactInfo[] = [
-        { icon: 'phone', label: 'Phone', value: '+1 (555) 123-4567', action: 'tel:+15551234567' },
+        { icon: 'phone', label: 'Phone', value: '+91 95592 62525', action: 'tel:+919559262525' },
         { icon: 'email', label: 'Email', value: 'support@ritzyard.com', action: 'mailto:support@ritzyard.com' },
         { icon: 'map-marker', label: 'Address', value: '123 Industry Lane, Business Park, USA' },
         { icon: 'clock-outline', label: 'Business Hours', value: 'Mon-Fri: 9:00 AM - 6:00 PM EST' },
@@ -174,7 +175,7 @@ Please get back to me.`;
             }}
           >
             <Ionicons name="logo-whatsapp" size={18} color="#25D366" />
-            <Text style={styles.whatsappQuickText}>Chat on WhatsApp</Text>
+            <Text style={styles.whatsappQuickText}>Chat on WhatsApp with +91 95592 62525</Text>
           </TouchableOpacity>
         </View>
 

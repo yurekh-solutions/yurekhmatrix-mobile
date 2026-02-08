@@ -24,7 +24,8 @@ interface FAQItem {
   icon?: string;
 }
 
-const WHATSAPP_NUMBER = '+919136242706';
+// Support WhatsApp number
+const WHATSAPP_NUMBER = '+919559262525';
 
 export default function FAQScreen() {
   const [expandedId, setExpandedId] = useState<string | null>(null);

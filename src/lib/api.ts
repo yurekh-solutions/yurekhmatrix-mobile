@@ -70,13 +70,19 @@ export const submitMaterialInquiry = async (inquiryData: any, token?: string): P
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    // Create an AbortController for timeout handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     const bodyData = JSON.stringify(inquiryData);
     const response = await fetch(`${API_BASE_URL}/material-inquiries`, {
       method: 'POST',
       headers,
       body: bodyData,
+      signal: controller.signal,
     });
 
+    clearTimeout(timeoutId);
     const data = await response.json();
 
     if (!response.ok) {
@@ -95,9 +101,21 @@ export const submitMaterialInquiry = async (inquiryData: any, token?: string): P
       },
     };
   } catch (error) {
+    // Handle specific error types
+    let errorMessage = 'Failed to submit inquiry. Please try again.';
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out. The backend may be waking up. Please try again in a moment.';
+      } else if (error.message.includes('Network request failed')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+    
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to submit inquiry. Please try again.',
+      message: errorMessage,
     };
   }
 };
@@ -417,11 +435,19 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
       }
       
       console.log('🚀 Sending registration with image...');
+      
+      // Create an AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const response = await fetch(`${API_BASE_URL}/auth/user/signup`, {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
         // DO NOT set Content-Type header - let browser set it automatically with boundary
       });
+      
+      clearTimeout(timeoutId);
       const data = await response.json();
       console.log('📥 Registration response:', data.success ? 'Success' : data.message);
       
@@ -459,9 +485,22 @@ export const buyerRegister = async (userData: any): Promise<{ success: boolean; 
     }
   } catch (error) {
     console.error('❌ Registration error:', error);
+    
+    // Handle specific error types
+    let errorMessage = 'Registration failed';
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out. The backend may be waking up. Please try again in a moment.';
+      } else if (error.message.includes('Network request failed')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+    
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Registration failed',
+      message: errorMessage,
     };
   }
 };

@@ -1,4 +1,4 @@
-kimport React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 
 const { height } = Dimensions.get('window');
@@ -53,6 +54,7 @@ interface BottomDrawerProps {
 
 const BottomDrawer: React.FC<BottomDrawerProps> = ({ visible, onClose, navigation }) => {
   const { isAuthenticated, user, logout } = useAuth();
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState<DrawerSection[]>([]);
 
@@ -275,7 +277,7 @@ const BottomDrawer: React.FC<BottomDrawerProps> = ({ visible, onClose, navigatio
           activeOpacity={1}
         />
 
-        <SafeAreaView style={styles.drawerContainer}>
+        <SafeAreaView style={[styles.drawerContainer, { paddingBottom: insets.bottom }]}>
           <LinearGradient
             colors={[COLORS.secondary, COLORS.background]}
             start={{ x: 0, y: 0 }}

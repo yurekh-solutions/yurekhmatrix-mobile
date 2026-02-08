@@ -186,11 +186,11 @@ Delivery Location: ${rfqData.deliveryLocation}
 Email: ${rfqData.email}
 Phone: ${rfqData.phone}`;
         
-        const whatsappUrl = `https://wa.me/919136242706?text=${encodeURIComponent(whatsappMessage)}`;
+        const whatsappUrl = `https://wa.me/919559434242?text=${encodeURIComponent(whatsappMessage)}`;
         
         Alert.alert(
           'Success!',
-          'Your RFQ has been submitted successfully!\n\nWe will contact you at +91 91362 42706 with a quotation.',
+          'Your RFQ has been submitted successfully!\n\nWe will contact you at +91 95594 34242 with a quotation.',
           [
             {
               text: 'Share on WhatsApp',

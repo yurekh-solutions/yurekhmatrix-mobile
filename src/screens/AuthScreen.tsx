@@ -380,12 +380,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               )}
 
               {/* Submit Button */}
-              <TouchableOpacity onPress={handleAuth} disabled={loading}>
+              <TouchableOpacity onPress={handleAuth} disabled={loading} activeOpacity={0.8}>
                 <LinearGradient
                   colors={GRADIENTS.premium}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
-                  style={styles.submitButton}
+                  style={[styles.submitButton, loading && styles.submitButtonDisabled]}
                 >
                   {loading ? (
                     <ActivityIndicator color="#fff" />
@@ -624,6 +624,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 8,
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
   },
   submitText: {
     color: '#fff',

@@ -22,8 +22,8 @@ import { buyerLogin, buyerRegister } from '../lib/api';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 
-// Import SVG logo
-import RitzLogo from '../../assets/ritz.svg';
+// Use PNG logo for production build compatibility (SVG doesn't work in APK)
+const RitzLogoPng = require('../../assets/ritz.png');
 
 // Design System Colors - Matching website exactly
 const COLORS = {
@@ -57,6 +57,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
   const [phone, setPhone] = useState('');
   const [profileImage, setProfileImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -154,6 +155,15 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
     }
 
     setLoading(true);
+    setLoadingMessage(isLogin ? 'Signing in...' : 'Creating account...');
+    
+    // Show backend wake-up message after 3 seconds for registration
+    let wakeUpTimeout: NodeJS.Timeout | null = null;
+    if (!isLogin) {
+      wakeUpTimeout = setTimeout(() => {
+        setLoadingMessage('Waking up backend... Please wait');
+      }, 3000);
+    }
 
     try {
       if (isLogin) {
@@ -208,10 +218,12 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
           Alert.alert('Registration Failed', response.message || 'Could not create account');
         }
       }
-    } catch (err) {
-      Alert.alert('Error', 'An error occurred. Please try again.');
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'An error occurred. Please try again.');
     } finally {
+      if (wakeUpTimeout) clearTimeout(wakeUpTimeout);
       setLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -252,7 +264,7 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
               end={{ x: 1, y: 1 }}
               style={styles.logoBox}
             >
-              <RitzLogo width={60} height={60} />
+                            <Image source={RitzLogoPng} style={styles.logoImage} resizeMode="contain" />
             </LinearGradient>
             <Text style={styles.brandName}>
               <Text style={styles.brandR}>r</Text>
@@ -434,27 +446,32 @@ export default function LoginScreen({ navigation, onLoginSuccess }: any) {
 
             {/* Submit Button */}
             <TouchableOpacity
-              style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+              style={styles.submitButton}
               onPress={handleAuth}
               disabled={loading}
             >
-              {loading ? (
-                <View style={styles.submitContent}>
-                  <ActivityIndicator size="small" color="#ffffff" />
-                </View>
-              ) : (
-                <LinearGradient
-                  colors={GRADIENTS.premium}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.submitGradient}
-                >
-                  <Text style={styles.submitText}>
-                    {isLogin ? 'Sign In' : 'Create Account'}
-                  </Text>
-                  <Ionicons name="arrow-forward" size={18} color="#ffffff" />
-                </LinearGradient>
-              )}
+              <LinearGradient
+                colors={GRADIENTS.premium}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.submitGradient, loading && styles.submitGradientDisabled]}
+              >
+                {loading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#ffffff" />
+                    {loadingMessage ? (
+                      <Text style={styles.loadingText}>{loadingMessage}</Text>
+                    ) : null}
+                  </View>
+                ) : (
+                  <>
+                    <Text style={styles.submitText}>
+                      {isLogin ? 'Sign In' : 'Create Account'}
+                    </Text>
+                    <Ionicons name="arrow-forward" size={18} color="#ffffff" />
+                  </>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
 
             {/* Forgot Password (Login only) */}
@@ -654,8 +671,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  submitButtonDisabled: {
-    opacity: 0.6,
+  submitGradientDisabled: {
+    opacity: 0.7,
   },
   submitGradient: {
     flexDirection: 'row',
@@ -667,6 +684,17 @@ const styles = StyleSheet.create({
   submitContent: {
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  loadingText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   submitText: {
     fontSize: 16,
