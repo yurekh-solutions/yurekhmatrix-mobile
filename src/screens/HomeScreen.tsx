@@ -72,6 +72,13 @@ interface Category {
   value: string;
 }
 
+interface ProductCategory {
+  id: string;
+  name: string;
+  image: any;
+  productId?: string;
+}
+
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -87,6 +94,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     { id: '2', name: 'Stainless', icon: 'shield-star', color: '#4ECDC4', value: 'stainless-steel' },
     { id: '3', name: 'Construction', icon: 'office-building-cog', color: '#FFB84D', value: 'construction' },
     { id: '4', name: 'Electrical', icon: 'flash-triangle', color: '#9B59B6', value: 'electrical' },
+  ];
+
+  // Product Category data with circular images
+  const productCategories: ProductCategory[] = [
+    { id: 'pc1', name: 'Bricks & Blocks', image: require('../../assets/products/red-clay-bricks-new.jpg'), productId: 'brick-1' },
+    { id: 'pc2', name: 'Cement', image: require('../../assets/products/cement-new.jpg'), productId: 'cement-1' },
+    { id: 'pc3', name: 'Fe-500 TMT Bars', image: require('../../assets/products/tmt-bars-new.jpg'), productId: 'featured-1' },
+    { id: 'pc4', name: 'Fe-550 TMT Bars', image: require('../../assets/products/tmt-bars.jpg'), productId: 'featured-1' },
+    { id: 'pc5', name: 'Paints & Finishes', image: require('../../assets/products/paints-coatings-new.jpg'), productId: 'paint-1' },
+    { id: 'pc6', name: 'Sand & Aggregates', image: require('../../assets/products/aggregates-new.jpg'), productId: 'sand-1' },
   ];
 
   useEffect(() => {
@@ -186,6 +203,44 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
     return text;
   };
+
+  // Handle product category click - find and show product details
+  const handleProductCategoryPress = (category: ProductCategory) => {
+    // Find matching product from the products list
+    const matchingProduct = products.find(p => {
+      const name = p.name.toLowerCase();
+      const catName = category.name.toLowerCase();
+      // Match based on category name keywords
+      if (catName.includes('brick')) return name.includes('brick') || name.includes('block');
+      if (catName.includes('cement')) return name.includes('cement');
+      if (catName.includes('tmt') || catName.includes('fe-500') || catName.includes('fe-550')) return name.includes('tmt') || name.includes('bar');
+      if (catName.includes('paint')) return name.includes('paint') || p.category === 'construction';
+      if (catName.includes('sand') || catName.includes('aggregate')) return name.includes('sand') || name.includes('aggregate');
+      return false;
+    });
+
+    if (matchingProduct) {
+      setSelectedProduct(matchingProduct);
+    } else {
+      // Navigate to products page with filter
+      router.push('/products');
+    }
+  };
+
+  // Render circular product category item
+  const renderProductCategory = (category: ProductCategory) => (
+    <TouchableOpacity
+      key={category.id}
+      style={styles.productCategoryItem}
+      activeOpacity={0.8}
+      onPress={() => handleProductCategoryPress(category)}
+    >
+      <View style={styles.productCategoryImageContainer}>
+        <Image source={category.image} style={styles.productCategoryImage} resizeMode="cover" />
+      </View>
+      <Text style={styles.productCategoryName} numberOfLines={2}>{category.name}</Text>
+    </TouchableOpacity>
+  );
 
   const renderProductCard = (item: Product) => {
     const imageSource = (typeof item.image === 'object' && item.image !== null)
@@ -358,6 +413,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     </View>
                   </View>
                 </LinearGradient>
+              </View>
+
+              {/* Product Category Section - Circular Icons */}
+              <View style={styles.productCategorySection}>
+                <Text style={styles.productCategorySectionTitle}>Product Category</Text>
+                <View style={styles.productCategoryContainer}>
+                  <View style={styles.productCategoryGrid}>
+                    {productCategories.map(renderProductCategory)}
+                  </View>
+                </View>
               </View>
   
               {/* Categories */}
@@ -909,6 +974,72 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
     fontWeight: '500',
     textAlign: 'center',
+  },
+
+  // Product Category Section Styles
+  productCategorySection: {
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+  },
+
+  productCategorySectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 16,
+  },
+
+  productCategoryContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+
+  productCategoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+
+  productCategoryItem: {
+    alignItems: 'center',
+    width: (width - 72) / 3,
+    marginBottom: 8,
+  },
+
+  productCategoryImageContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    overflow: 'hidden',
+    backgroundColor: COLORS.secondary,
+    borderWidth: 3,
+    borderColor: COLORS.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+
+  productCategoryImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  productCategoryName: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginTop: 8,
+    maxWidth: 80,
   },
 });
 
