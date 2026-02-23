@@ -978,52 +978,57 @@ const styles = StyleSheet.create({
 
   // Product Category Section Styles
   productCategorySection: {
-    paddingVertical: 8,
     paddingHorizontal: 20,
-    marginTop: -8,
+    marginTop: 8,
+    marginBottom: 8,
   },
 
   productCategorySectionTitle: {
     fontSize: 16,
     fontWeight: '800',
     color: COLORS.text,
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   productCategoryContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: 'rgba(193, 87, 56, 0.12)',
+    borderColor: 'rgba(193, 87, 56, 0.15)',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
 
   productCategoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
   },
 
   productCategoryItem: {
     alignItems: 'center',
-    width: (width - 56) / 3,
-    marginBottom: 6,
+    width: (width - 60) / 3,
+    marginBottom: 12,
   },
 
   productCategoryImageContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     overflow: 'hidden',
     backgroundColor: COLORS.secondary,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: COLORS.white,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
 
   productCategoryImage: {
@@ -1036,8 +1041,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
-    marginTop: 4,
-    maxWidth: 70,
+    marginTop: 6,
+    maxWidth: 75,
+    lineHeight: 13,
   },
 });
 
