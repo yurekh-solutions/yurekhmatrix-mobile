@@ -70,6 +70,7 @@ interface Category {
   icon: string;
   color: string;
   value: string;
+  image?: any;
 }
 
 interface ProductCategory {
@@ -90,10 +91,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [cartCount, setCartCount] = useState(0);
 
   const categories: Category[] = [
-    { id: '1', name: 'Mild Steel', icon: 'iron', color: '#c15738', value: 'mild-steel' },
-    { id: '2', name: 'Stainless', icon: 'shield-star', color: '#4ECDC4', value: 'stainless-steel' },
-    { id: '3', name: 'Construction', icon: 'office-building-cog', color: '#FFB84D', value: 'construction' },
-    { id: '4', name: 'Electrical', icon: 'flash-triangle', color: '#9B59B6', value: 'electrical' },
+    { id: '1', name: 'Mild Steel', icon: 'iron', color: '#c15738', value: 'mild-steel', image: require('../../assets/products/ms-plates-new.jpg') },
+    { id: '2', name: 'Stainless', icon: 'shield-star', color: '#c15738', value: 'stainless-steel', image: require('../../assets/products/ss-sheets-new.jpg') },
+    { id: '3', name: 'Construction', icon: 'office-building-cog', color: '#c15738', value: 'construction', image: require('../../assets/products/concrete-blocks-new.jpg') },
+    { id: '4', name: 'Electrical', icon: 'flash-triangle', color: '#c15738', value: 'electrical', image: require('../../assets/products/electrical-cables.jpg') },
   ];
 
   // Product Category data with circular images
@@ -171,21 +172,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           style={[
             styles.categoryIconBox,
             { 
-              backgroundColor: isActive ? category.color : COLORS.white,
-              borderColor: isActive ? category.color : COLORS.border,
+              borderColor: isActive ? COLORS.primary : COLORS.border,
+              borderWidth: isActive ? 2.5 : 1.5,
             },
           ]}
         >
-          <MaterialCommunityIcons
-            name={category.icon as any}
-            size={22}
-            color={isActive ? '#FFFFFF' : category.color}
-          />
+          {category.image ? (
+            <Image source={category.image} style={styles.categoryIconImage} resizeMode="cover" />
+          ) : (
+            <MaterialCommunityIcons
+              name={category.icon as any}
+              size={22}
+              color={isActive ? COLORS.primary : category.color}
+            />
+          )}
         </View>
         <Text
           style={[
             styles.categoryButtonText,
-            isActive && { color: category.color, fontWeight: '700' },
+            isActive && { color: COLORS.primary, fontWeight: '700' },
           ]}
           numberOfLines={1}
         >
@@ -839,21 +844,28 @@ const styles = StyleSheet.create({
 
   categoryButton: {
     alignItems: 'center',
-    gap: 6,
-    marginRight: 16,
+    gap: 4,
+    marginRight: 14,
   },
 
   categoryIconBox: {
-    width: 50,
-    height: 50,
-    borderRadius: 14,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
+    overflow: 'hidden',
+    backgroundColor: COLORS.white,
+  },
+
+  categoryIconImage: {
+    width: '100%',
+    height: '100%',
   },
 
   categoryButtonText: {
-    fontSize: 11,
+    fontSize: 10,
     color: COLORS.textLight,
     fontWeight: '600',
     marginTop: 2,
