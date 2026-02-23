@@ -1007,13 +1007,14 @@ const styles = StyleSheet.create({
   productCategoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
+    alignItems: 'flex-start',
   },
 
   productCategoryItem: {
     alignItems: 'center',
-    width: (width - 60) / 3,
-    marginBottom: 12,
+    width: '30%',
+    marginBottom: 14,
   },
 
   productCategoryImageContainer: {
