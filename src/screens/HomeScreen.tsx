@@ -978,54 +978,52 @@ const styles = StyleSheet.create({
 
   // Product Category Section Styles
   productCategorySection: {
-    paddingVertical: 20,
+    paddingVertical: 8,
     paddingHorizontal: 20,
+    marginTop: -8,
   },
 
   productCategorySectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
     color: COLORS.text,
-    marginBottom: 16,
+    marginBottom: 10,
   },
 
   productCategoryContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(193, 87, 56, 0.12)',
   },
 
   productCategoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 12,
+    justifyContent: 'space-around',
   },
 
   productCategoryItem: {
     alignItems: 'center',
-    width: (width - 72) / 3,
-    marginBottom: 8,
+    width: (width - 56) / 3,
+    marginBottom: 6,
   },
 
   productCategoryImageContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     overflow: 'hidden',
     backgroundColor: COLORS.secondary,
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: COLORS.white,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
 
   productCategoryImage: {
@@ -1034,12 +1032,12 @@ const styles = StyleSheet.create({
   },
 
   productCategoryName: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
-    marginTop: 8,
-    maxWidth: 80,
+    marginTop: 4,
+    maxWidth: 70,
   },
 });
 
