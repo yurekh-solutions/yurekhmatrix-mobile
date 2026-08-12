@@ -155,7 +155,7 @@ const RFQModal: React.FC<RFQModalProps> = ({ visible, product, onClose, onAddToC
 
       // Post to backend RFQ endpoint
       const response = await fetch(
-        'https://suppliermatrix-backend.onrender.com/api/rfq/create',
+        'https://backendmatrix-9q18.onrender.com/api/rfq/create',
         {
           method: 'POST',
           headers: {

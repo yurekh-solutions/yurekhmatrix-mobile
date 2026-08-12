@@ -53,7 +53,7 @@ A cross-platform mobile application for iOS and Android built with React Native 
 ## Backend Integration
 
 Connected to **backendmatrix** API at:
-- Production: `https://backendmatrix.onrender.com/api`
+- Production: `https://backendmatrix-9q18.onrender.com/api`
 - Development: `http://localhost:5000/api` (configurable via .env)
 
 ### API Endpoints Used
@@ -158,7 +158,7 @@ ERROR:      #ef4444
 2. **Configure environment variables**
    Create a `.env` file:
    ```
-   EXPO_PUBLIC_API_URL=https://backendmatrix.onrender.com/api
+   EXPO_PUBLIC_API_URL=https://backendmatrix-9q18.onrender.com/api
    ```
 
 3. **Start the development server**

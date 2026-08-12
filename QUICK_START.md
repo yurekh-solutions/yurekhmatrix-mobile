@@ -68,7 +68,7 @@ npm run dev
 ### Use Production Backend:
 ```bash
 # .env should have:
-EXPO_PUBLIC_API_URL=https://backendmatrix.onrender.com/api
+EXPO_PUBLIC_API_URL=https://backendmatrix-9q18.onrender.com/api
 
 # Restart Expo:
 npx expo start --clear

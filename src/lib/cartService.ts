@@ -19,7 +19,7 @@ export interface CartItem {
 }
 
 const CART_STORAGE_KEY = '@rfq_cart';
-const CART_API_URL = 'https://suppliermatrix-backend.onrender.com/api/rfq';
+const CART_API_URL = 'https://backendmatrix-9q18.onrender.com/api/rfq';
 
 class CartService {
   // Get all cart items from local storage

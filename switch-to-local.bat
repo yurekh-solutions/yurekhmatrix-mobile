@@ -16,7 +16,7 @@ echo # LOCAL DEVELOPMENT ^(Active^)
 echo EXPO_PUBLIC_API_URL=http://localhost:5000/api
 echo.
 echo # PRODUCTION ^(Commented out^)
-echo # EXPO_PUBLIC_API_URL=https://backendmatrix.onrender.com/api
+echo # EXPO_PUBLIC_API_URL=https://backendmatrix-9q18.onrender.com/api
 echo.
 echo # ================================
 echo # Restart Expo: npx expo start --clear

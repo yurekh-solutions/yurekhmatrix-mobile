@@ -13,7 +13,7 @@ echo # Backend API URL Configuration
 echo # ================================
 echo.
 echo # PRODUCTION ^(Active^)
-echo EXPO_PUBLIC_API_URL=https://backendmatrix.onrender.com/api
+echo EXPO_PUBLIC_API_URL=https://backendmatrix-9q18.onrender.com/api
 echo.
 echo # LOCAL DEVELOPMENT ^(Commented out^)
 echo # EXPO_PUBLIC_API_URL=http://localhost:5000/api
@@ -22,7 +22,7 @@ echo # ================================
 echo # Restart Expo: npx expo start --clear
 ) > .env
 
-echo ✅ Switched to PRODUCTION backend (https://backendmatrix.onrender.com/api)
+echo ✅ Switched to PRODUCTION backend (https://backendmatrix-9q18.onrender.com/api)
 echo.
 echo 📝 Next steps:
 echo    Restart Expo: npx expo start --clear

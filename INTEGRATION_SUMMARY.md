@@ -280,7 +280,7 @@ yurekhmatrix-mobile/
 
 ### Environment Variables
 ```env
-EXPO_PUBLIC_API_URL=https://backendmatrix.onrender.com/api
+EXPO_PUBLIC_API_URL=https://backendmatrix-9q18.onrender.com/api
 ```
 
 ### Protected Files (.gitignore)

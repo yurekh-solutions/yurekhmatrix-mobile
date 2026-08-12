@@ -124,7 +124,7 @@ export default function RFQTab() {
 
       // Try to submit to backend (optional - offline mode still works)
       let backendSubmitted = false;
-      const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://backendmatrix.onrender.com/api';
+      const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://backendmatrix-9q18.onrender.com/api';
       try {
         const response = await fetch(
           `${API_URL}/rfqs`,

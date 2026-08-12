@@ -477,7 +477,7 @@ Create `.env` file in project root:
 EXPO_PUBLIC_API_URL=http://localhost:5000/api
 
 # Or Production
-EXPO_PUBLIC_API_URL=https://backendmatrix.onrender.com/api
+EXPO_PUBLIC_API_URL=https://backendmatrix-9q18.onrender.com/api
 ```
 
 ### Change API URL in Code
@@ -485,8 +485,8 @@ EXPO_PUBLIC_API_URL=https://backendmatrix.onrender.com/api
 // In src/lib/api.ts
 const getApiUrl = (): string => {
   // For development: http://localhost:5000/api
-  // For production: https://backendmatrix.onrender.com/api
-  return process.env.EXPO_PUBLIC_API_URL || 'https://backendmatrix.onrender.com/api';
+  // For production: https://backendmatrix-9q18.onrender.com/api
+  return process.env.EXPO_PUBLIC_API_URL || 'https://backendmatrix-9q18.onrender.com/api';
 };
 ```
 

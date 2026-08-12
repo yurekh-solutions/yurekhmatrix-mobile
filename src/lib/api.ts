@@ -7,13 +7,13 @@ import { allLocalProducts, LocalProduct } from '@/src/data/localProducts';
 
 /**
  * Get the appropriate API URL based on environment
- * - Production: Uses https://backendmatrix.onrender.com/api
+ * - Production: Uses https://backendmatrix-9q18.onrender.com/api
  * - Development: Uses http://localhost:5000/api (if ENV is set)
  * - Fallback: Uses environment variable or defaults to production
  */
 const getApiUrl = (): string => {
   // For React Native Expo, we use environment variables from .env
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://backendmatrix.onrender.com/api';
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://backendmatrix-9q18.onrender.com/api';
   return apiUrl;
 };
 

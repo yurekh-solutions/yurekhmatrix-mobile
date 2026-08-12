@@ -167,7 +167,7 @@ Ensure these routes exist in your navigation:
 ### Products API
 The app is configured to fetch products from:
 ```
-Production: https://backendmatrix.onrender.com/api/products
+Production: https://backendmatrix-9q18.onrender.com/api/products
 Local Dev: http://localhost:5000/api/products
 ```
 
